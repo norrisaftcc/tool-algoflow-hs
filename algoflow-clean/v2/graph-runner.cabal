@@ -1,0 +1,31 @@
+cabal-version:      2.4
+name:               graph-runner
+version:            0.1.0.0
+synopsis:           Simple computational graphs done right
+description:        Run graphs of computations. No enterprise nonsense.
+                    Just clean, composable Haskell that forms a proper category.
+license:            BSD-3-Clause
+author:             Your Name
+maintainer:         your-email@example.com
+category:           Control
+build-type:         Simple
+
+library
+    exposed-modules:  Graph
+                    , Verify
+                    , Examples
+                    , Analysis
+    build-depends:    base >=4.14 && <5
+                    , async
+                    , containers
+                    , time
+    hs-source-dirs:   .
+    default-language: Haskell2010
+    ghc-options:      -Wall -Wno-name-shadowing
+
+executable demo
+    main-is:          Demo.hs
+    build-depends:    base >=4.14 && <5
+                    , graph-runner
+    hs-source-dirs:   .
+    default-language: Haskell2010
