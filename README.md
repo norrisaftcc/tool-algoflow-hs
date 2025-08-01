@@ -36,8 +36,8 @@ cabal build
 # Run examples
 cabal run
 
-# Or try the simplified v2 implementation
-cd v2
+# Or try the cookbook implementation with examples
+cd cookbook
 cabal run demo
 ```
 
@@ -49,9 +49,10 @@ tool-algoflow-hs/
 │   ├── src/                 # Core library modules
 │   ├── test/               # Test suite (in progress)
 │   └── algoflow-clean.cabal
-├── algoflow-clean/v2/       # Simplified ~150 line implementation
-│   ├── Graph.hs            # Core computational graph
-│   ├── Examples.hs         # Usage examples
+├── algoflow-clean/cookbook/ # Simplified implementations & examples
+│   ├── Graph.hs            # Core computational graph (~150 lines)
+│   ├── Examples.hs         # Practical usage patterns
+│   ├── Demo.hs             # Runnable demonstrations
 │   └── graph-runner.cabal
 └── docs/                   # Documentation and design notes
 ```

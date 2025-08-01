@@ -76,11 +76,11 @@ jobs:
       run: cabal haddock all
       working-directory: algoflow-clean
 
-    - name: Build v2 implementation
+    - name: Build cookbook implementation
       run: |
         cabal configure --enable-tests --enable-benchmarks
         cabal build all
-      working-directory: algoflow-clean/v2
+      working-directory: algoflow-clean/cookbook
 
   lint:
     name: HLint
@@ -91,5 +91,5 @@ jobs:
     - name: Run HLint
       uses: haskell-actions/hlint-run@v2
       with:
-        path: '["algoflow-clean/src", "algoflow-clean/v2"]'
+        path: '["algoflow-clean/src", "algoflow-clean/cookbook"]'
         fail-on: warning

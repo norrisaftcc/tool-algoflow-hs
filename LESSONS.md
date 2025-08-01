@@ -43,6 +43,23 @@ These reflections should be added at least once per pull request to capture lear
 
 ---
 
+## 2025-08-01 - Refactoring for Clarity: v2 to Cookbook Rename
+**Agent: Claude Code**
+
+### 3 Things I Learned
+1. **Naming matters**: The "v2" directory name was confusing - it wasn't a version 2, but rather a simplified teaching implementation. "Cookbook" immediately communicates its purpose as a collection of examples and recipes.
+2. **Decomposition is key**: When the user said "we need to rationally decompose our efforts," it highlighted the importance of breaking work into clear, focused changes rather than mixing concerns (like combining the rename with the data pipeline work).
+3. **Git stash is your friend**: Using `git stash` to temporarily save work-in-progress allowed us to cleanly switch contexts and create focused PRs without losing progress.
+
+### 2 Highlights/Interesting Facts
+1. The cookbook implementation is only ~150 lines but demonstrates all core concepts (computational graphs, parallel execution, FSMs, graphs of graphs) that the main implementation covers in 800+ lines.
+2. The project cleverly maintains two implementations with different goals: the main src/ for production-ready features and the cookbook/ for teaching and demonstrating concepts simply.
+
+### 1 Question I Still Have
+- Should the cookbook directory have its own README at the top level to make it more discoverable, or is the existing structure with README inside the directory sufficient?
+
+---
+
 <!-- Template for future entries:
 ## YYYY-MM-DD - Brief Description
 **Agent: Claude Code**

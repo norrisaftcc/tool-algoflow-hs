@@ -77,7 +77,7 @@ No magic. It's just a specialized graph.
 ## Running It
 
 ```bash
-cd v2
+cd cookbook
 cabal run demo
 ```
 

@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a Haskell-based workflow/computational graph engine that demonstrates clean, type-safe approaches to building workflow systems. The project contains two main implementations:
 
 1. **AlgoFlow Clean** (`/algoflow-clean/`) - Comprehensive workflow engine with multiple DSL approaches
-2. **Graph Runner** (`/algoflow-clean/v2/`) - Simplified ~150-line implementation focused on core concepts
+2. **Cookbook** (`/algoflow-clean/cookbook/`) - Simplified ~150-line implementation demonstrating core concepts with practical examples
 
 ## Build Commands
 
@@ -18,9 +18,9 @@ cabal build              # Build the project
 cabal run               # Run the main executable
 cabal test              # Run tests (not yet implemented)
 
-# V2 implementation
-cd algoflow-clean/v2
-cabal build             # Build the v2 project
+# Cookbook implementation
+cd algoflow-clean/cookbook
+cabal build             # Build the cookbook project
 cabal run demo          # Run the demo executable
 ```
 
@@ -32,7 +32,7 @@ cabal build --ghc-options="-Wall"  # Build with all warnings
 
 # REPL for interactive development
 cabal repl              # Load modules in GHCi
-cabal repl v2:demo      # Load v2 demo in GHCi
+cabal repl cookbook:demo      # Load cookbook demo in GHCi
 
 # Documentation
 cabal haddock           # Generate Haddock documentation
@@ -57,11 +57,12 @@ cabal haddock           # Generate Haddock documentation
 - `Flow.Cache.hs` - Caching interface (SQLite implementation planned)
 - `Flow.Examples.hs` - Comprehensive usage examples
 
-**V2 Implementation (`/algoflow-clean/v2/`)**:
+**Cookbook Implementation (`/algoflow-clean/cookbook/`)**:
 - `Graph.hs` - Core computational graph abstraction in ~150 lines
-- `Examples.hs` - Real-world usage patterns
+- `Examples.hs` - Real-world usage patterns  
 - `Analysis.hs` - Static graph analysis capabilities
 - `Verify.hs` - Category law verification
+- `Demo.hs` - Runnable demonstrations
 
 ### Workflow Construction Patterns
 
