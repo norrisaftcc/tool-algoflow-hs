@@ -1,0 +1,22 @@
+# CODEOWNERS for AlgoFlow
+# This file defines who is responsible for code reviews in different parts of the codebase
+
+# Default owners for everything in the repo
+*                           @norrisaftcc
+
+# Core workflow engine
+/algoflow-clean/src/        @norrisaftcc
+/algoflow-clean/v2/         @norrisaftcc
+
+# Documentation
+*.md                        @norrisaftcc
+/docs/                      @norrisaftcc
+
+# CI/CD and build configuration
+/.github/                   @norrisaftcc
+*.cabal                     @norrisaftcc
+cabal.project              @norrisaftcc
+
+# Examples and tutorials
+/algoflow-clean/examples/   @norrisaftcc
+**/Examples.hs             @norrisaftcc
