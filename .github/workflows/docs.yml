@@ -1,0 +1,110 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Haskell
+      uses: haskell-actions/setup@v2
+      with:
+        ghc-version: '9.6.3'
+        cabal-version: '3.10.2.0'
+        cabal-update: true
+
+    - name: Configure the build
+      run: |
+        cabal configure --enable-documentation
+        cabal build --dry-run
+      working-directory: algoflow-clean
+
+    - name: Restore cached dependencies
+      uses: actions/cache/restore@v3
+      id: cache
+      with:
+        path: ~/.cabal/store
+        key: ${{ runner.os }}-docs-${{ hashFiles('**/plan.json') }}
+        restore-keys: ${{ runner.os }}-docs-
+
+    - name: Install dependencies
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: cabal build --only-dependencies all
+      working-directory: algoflow-clean
+
+    - name: Build documentation
+      run: |
+        cabal haddock all --haddock-hyperlink-source --haddock-html-location='https://hackage.haskell.org/package/$pkg-$version/docs'
+        cp -r dist-newstyle/build/*/ghc-*/algoflow-clean-*/doc/html/algoflow-clean ../docs
+      working-directory: algoflow-clean
+
+    - name: Build v2 documentation
+      run: |
+        cabal haddock all --haddock-hyperlink-source
+        cp -r dist-newstyle/build/*/ghc-*/graph-runner-*/doc/html/graph-runner ../docs/v2
+      working-directory: algoflow-clean/v2
+
+    - name: Create index page
+      run: |
+        cat > docs/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>AlgoFlow Documentation</title>
+            <style>
+                body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 2em; }
+                h1 { color: #5e35b1; }
+                a { color: #5e35b1; text-decoration: none; }
+                a:hover { text-decoration: underline; }
+                .links { margin: 2em 0; }
+                .links a { display: block; margin: 0.5em 0; }
+            </style>
+        </head>
+        <body>
+            <h1>AlgoFlow Documentation</h1>
+            <p>A type-safe workflow engine for Haskell</p>
+            <div class="links">
+                <h2>API Documentation</h2>
+                <a href="algoflow-clean/">AlgoFlow Main Implementation</a>
+                <a href="v2/">AlgoFlow v2 (Simplified Implementation)</a>
+                <h2>Resources</h2>
+                <a href="https://github.com/norrisaftcc/tool-algoflow-hs">GitHub Repository</a>
+                <a href="https://github.com/norrisaftcc/tool-algoflow-hs/blob/main/README.md">README</a>
+                <a href="https://github.com/norrisaftcc/tool-algoflow-hs/blob/main/DESIGN.md">Design Documentation</a>
+            </div>
+        </body>
+        </html>
+        EOF
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: docs
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build-docs
+    steps:
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4

@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }} with GHC ${{ matrix.ghc }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        ghc: ['9.4.7', '9.6.3', '9.8.1']
+        cabal: ['3.10.2.0']
+        exclude:
+          # Windows builds tend to be slower, so reduce matrix
+          - os: windows-latest
+            ghc: '9.4.7'
+          - os: windows-latest
+            ghc: '9.6.3'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Haskell
+      uses: haskell-actions/setup@v2
+      id: setup
+      with:
+        ghc-version: ${{ matrix.ghc }}
+        cabal-version: ${{ matrix.cabal }}
+        cabal-update: true
+
+    - name: Configure the build
+      run: |
+        cabal configure --enable-tests --enable-benchmarks --enable-documentation
+        cabal build --dry-run
+      working-directory: algoflow-clean
+
+    - name: Restore cached dependencies
+      uses: actions/cache/restore@v3
+      id: cache
+      env:
+        key: ${{ runner.os }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ steps.setup.outputs.cabal-version }}
+      with:
+        path: ${{ steps.setup.outputs.cabal-store }}
+        key: ${{ env.key }}-plan-${{ hashFiles('**/plan.json') }}
+        restore-keys: ${{ env.key }}-
+
+    - name: Install dependencies
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: cabal build all --only-dependencies
+      working-directory: algoflow-clean
+
+    - name: Save cached dependencies
+      uses: actions/cache/save@v3
+      if: steps.cache.outputs.cache-hit != 'true'
+      with:
+        path: ${{ steps.setup.outputs.cabal-store }}
+        key: ${{ steps.cache.outputs.cache-primary-key }}
+
+    - name: Build
+      run: cabal build all --enable-tests --enable-benchmarks
+      working-directory: algoflow-clean
+
+    - name: Run tests
+      run: cabal test all
+      working-directory: algoflow-clean
+      continue-on-error: true  # Tests not implemented yet
+
+    - name: Check documentation
+      run: cabal haddock all
+      working-directory: algoflow-clean
+
+    - name: Build v2 implementation
+      run: |
+        cabal configure --enable-tests --enable-benchmarks
+        cabal build all
+      working-directory: algoflow-clean/v2
+
+  lint:
+    name: HLint
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run HLint
+      uses: haskell-actions/hlint-run@v2
+      with:
+        path: '["algoflow-clean/src", "algoflow-clean/v2"]'
+        fail-on: warning

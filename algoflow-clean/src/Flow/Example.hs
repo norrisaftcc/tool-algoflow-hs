@@ -12,17 +12,18 @@ No ByteStrings everywhere, no stringly-typed nonsense.
 module Flow.Example where
 
 import Control.Arrow
-import Control.Category (>>>)
-import Prelude hiding ((>>>))
+import Control.Category
+import Prelude hiding ((.), id)
 
-import Flow.Core
-import Flow.Free
-import Flow.Execute
+import Flow.Core (Flow(..), runFlow, NamedFlow(..), step)
+import qualified Flow.Core as Core
+import qualified Flow.Free as Free  
+import qualified Flow.Execute as Execute
 
 -- Example 1: Using the Arrow-based approach
 -- This leverages Haskell's built-in Arrow notation
 
-dataProcessingArrow :: Workflow IO FilePath ProcessedData
+dataProcessingArrow :: Core.Workflow IO FilePath ProcessedData
 dataProcessingArrow = proc inputFile -> do
   -- Read the file
   rawData <- step "read" readFile -< inputFile
@@ -37,52 +38,53 @@ dataProcessingArrow = proc inputFile -> do
 -- Example 2: Using the Free monad DSL
 -- This is more flexible and easier to introspect
 
-dataProcessingFree :: Flow.Free.Workflow FilePath ProcessedData
+dataProcessingFree :: Free.Workflow FilePath ProcessedData
 dataProcessingFree = do
   -- Sequential steps
-  rawData <- compute "read" readFile
+  rawData <- Free.compute "read" readFile
   
   -- Parallel processing
-  (cleaned, validated) <- parallel
-    (compute "clean" cleanData)
-    (compute "validate" validateData)
+  (cleaned, validated) <- Free.parallel
+    (Free.compute "clean" cleanData)
+    (Free.compute "validate" validateData)
   
   -- Cache expensive computation
-  cache "processed" $ compute "process" $ \(c, v) -> 
+  Free.cache "processed" $ Free.compute "process" $ \(c, v) -> 
     processData (c, v)
 
 -- Example 3: Composing workflows
 -- This shows the compositional nature
 
 -- A simple workflow
-parseConfig :: Workflow IO FilePath Config
+parseConfig :: Core.Workflow IO FilePath Config
 parseConfig = step "parseConfig" $ \path -> do
   content <- readFile path
   return $ parseConfigContent content
 
 -- Another simple workflow  
-fetchData :: Workflow IO Config [DataItem]
+fetchData :: Core.Workflow IO Config [DataItem]
 fetchData = step "fetchData" $ \config -> do
   -- Fetch based on config
   fetchFromAPI (configEndpoint config)
 
 -- Compose them!
-fullPipeline :: Workflow IO FilePath ProcessedData
+fullPipeline :: Core.Workflow IO FilePath ProcessedData
 fullPipeline = 
   parseConfig >>> 
   fetchData >>> 
   step "analyze" analyzeItems
 
 -- Example 4: Error handling done right
-robustPipeline :: Flow.Free.Workflow FilePath ProcessedData
-robustPipeline = recover mainPath fallbackPath
+robustPipeline :: Free.Workflow FilePath ProcessedData
+robustPipeline = Free.recover mainPath fallbackPath
   where
     mainPath = do
-      data' <- compute "fetch" fetchRemoteData
-      compute "process" processData
+      Free.compute "fetchAndProcess" (\path -> do
+        data' <- fetchRemoteData path
+        processData' data')
     
     fallbackPath = do
-      compute "loadCache" loadFromCache
+      Free.compute "loadCache" loadFromCache
 
 -- Example 5: Using the graph-based approach for complex dependencies
 -- (Would use Flow.Graph module)
@@ -121,12 +123,12 @@ loadFromCache _ = return ProcessedData
 runExamples :: IO ()
 runExamples = do
   putStrLn "=== Arrow-based Workflow ==="
-  result1 <- runWorkflow defaultConfig dataProcessingArrow "input.txt"
+  result1 <- Execute.runWorkflow Execute.defaultConfig dataProcessingArrow "input.txt"
   print result1
   
   putStrLn "\n=== Free Monad Workflow ==="
-  result2 <- Flow.Free.runWorkflow dataProcessingFree "input.txt"
+  result2 <- Free.runWorkflow dataProcessingFree "input.txt"
   print result2
   
   putStrLn "\n=== Dry Run ==="
-  putStrLn $ Flow.Free.dryRun robustPipeline
+  putStrLn $ Free.dryRun robustPipeline

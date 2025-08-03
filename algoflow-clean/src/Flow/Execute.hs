@@ -27,7 +27,7 @@ module Flow.Execute
 
 import Control.Concurrent.Async (async, wait, mapConcurrently)
 import Control.Concurrent.STM
-import Control.Exception (Exception, SomeException, catch, try)
+import Control.Exception (Exception, SomeException, catch, try, evaluate)
 import Control.Monad (forM_, when)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Map.Strict (Map)
@@ -35,6 +35,7 @@ import qualified Data.Map.Strict as Map
 import Data.Text (Text)
 import Data.Time (UTCTime, getCurrentTime, diffUTCTime)
 import Data.Typeable (Typeable)
+import Data.Dynamic (Dynamic)
 
 import Flow.Core
 
@@ -49,7 +50,7 @@ data ExecutionConfig = ExecutionConfig
 defaultConfig :: ExecutionConfig
 defaultConfig = ExecutionConfig
   { maxParallel = 4
-  , enableCache = True
+  , enableCache = False
   , cacheDir = Nothing
   }
 
@@ -73,22 +74,23 @@ instance Exception ExecutionError
 type Cache m = TVar (Map Text (ExecutionResult Dynamic))
 
 -- | Run a workflow with the given configuration
-runWorkflow :: forall m a b. MonadIO m 
-            => ExecutionConfig 
-            -> Workflow m a b 
+runWorkflow :: ExecutionConfig 
+            -> Workflow IO a b 
             -> a 
-            -> m (Either ExecutionError (ExecutionResult b))
+            -> IO (Either ExecutionError (ExecutionResult b))
 runWorkflow config workflow input = do
-  startTime <- liftIO getCurrentTime
-  cache <- liftIO $ newTVarIO Map.empty
+  startTime <- getCurrentTime
+  cache <- newTVarIO Map.empty
   
   -- Convert workflow to executable flow
   let flow = interpret workflow
   
-  -- Execute with timing
-  result <- liftIO $ try $ runFlow flow input
+  -- Execute with timing, forcing evaluation to catch pure exceptions
+  result <- try $ do
+    value <- runFlow flow input
+    evaluate value  -- Force evaluation to catch arithmetic exceptions
   
-  endTime <- liftIO getCurrentTime
+  endTime <- getCurrentTime
   let duration = realToFrac $ diffUTCTime endTime startTime
   
   case result of
@@ -101,12 +103,11 @@ runWorkflow config workflow input = do
 
 -- | Execute workflows in parallel when possible
 -- This is a more sophisticated version that analyzes the workflow structure
-executeParallel :: MonadIO m 
-                => ExecutionConfig 
-                -> [(Text, Workflow m a b)] 
+executeParallel :: ExecutionConfig 
+                -> [(Text, Workflow IO a b)] 
                 -> a 
-                -> m (Map Text (Either ExecutionError (ExecutionResult b)))
-executeParallel config workflows input = liftIO $ do
+                -> IO (Map Text (Either ExecutionError (ExecutionResult b)))
+executeParallel config workflows input = do
   -- Create a pool of workers based on maxParallel config
   results <- mapConcurrently runOne workflows
   return $ Map.fromList results

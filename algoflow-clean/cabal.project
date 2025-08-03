@@ -1,0 +1,18 @@
+packages: .
+
+-- Use the newer index state
+index-state: 2024-08-01T00:00:00Z
+
+-- Build settings
+optimization: True
+documentation: False
+
+-- Test settings
+tests: True
+benchmarks: False
+
+-- Flags for better error messages
+package algoflow-clean
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates
+               -Wincomplete-uni-patterns -Wmissing-export-lists
+               -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints

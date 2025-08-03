@@ -98,11 +98,11 @@ readStep = Step "read" Proxy $
 
 cleanStep :: Step '[ '("raw", RawData)] '("clean", CleanData)
 cleanStep = Step "clean" Proxy $
-  Computation $ \(HCons raw HNil) -> return $ filter (/= ' ') raw
+  Computation $ \(HCons (raw :: RawData) HNil) -> return $ filter (/= ' ') raw
 
 validateStep :: Step '[ '("raw", RawData)] '("valid", ValidData)  
 validateStep = Step "validate" Proxy $
-  Computation $ \(HCons raw HNil) -> return $ not (null raw)
+  Computation $ \(HCons (raw :: RawData) HNil) -> return $ not (null raw)
 
 -- Compose into workflow
 -- This will only compile if dependencies are satisfied!

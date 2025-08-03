@@ -3,6 +3,7 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TupleSections #-}
 
 {-|
 Module      : Flow.Core
@@ -21,23 +22,32 @@ module Flow.Core
     
     -- * Smart Constructors
   , step
-  , (>>>)
-  , (***)
   , cache
   , recover
     
     -- * Interpreters
   , interpret
+  , interpretWithCache
   ) where
 
 import Control.Category
 import Control.Arrow
 import Control.Monad ((>=>))
-import Control.Monad.IO.Class (MonadIO)
+import Control.Monad.IO.Class (MonadIO, liftIO)
+import Data.ByteString (ByteString)
 import Data.Profunctor
 import Data.Text (Text)
 import Data.Typeable (Typeable)
+import Data.Hashable (Hashable)
 import Prelude hiding ((.), id)
+
+-- For caching support
+import qualified Flow.Cache as Cache
+import Data.IORef (IORef, newIORef, readIORef)
+
+-- For error handling
+import qualified Flow.Error as Error
+import Control.Exception (catch, SomeException)
 
 -- | A computation that takes input of type 'a' and produces output of type 'b'.
 -- This is essentially a Kleisli arrow, which forms a category.
@@ -95,16 +105,39 @@ data Workflow m a b where
 interpret :: MonadIO m => Workflow m a b -> Flow m a b
 interpret Id = id
 interpret (Seq w1 w2) = interpret w2 . interpret w1
-interpret (Par w1 w2) = interpret w1 *** interpret w2
+interpret (Par w1 w2) = interpret w1 Control.Arrow.*** interpret w2
 interpret (Step (NamedFlow _ f)) = f
 interpret (Cache key w) = Flow $ \a -> do
-  -- TODO: Implement actual caching logic
-  -- For now, just run the workflow
+  -- Simple interpretation without cache - just run the workflow
   runFlow (interpret w) a
 interpret (Recover w recovery) = Flow $ \a -> do
-  -- TODO: Implement actual error handling
-  -- For now, just run the main workflow
+  -- For simplicity, just run the main workflow for now
+  -- TODO: Implement proper error recovery
   runFlow (interpret w) a
+
+-- | Interpret a workflow with caching support.
+-- For now, we use a simple global cache approach.
+-- In production, you'd want per-workflow-type caches.
+interpretWithCache :: (MonadIO m)
+                   => Cache.Cache m
+                   -> Workflow m a b
+                   -> Flow m a b
+interpretWithCache cache = go
+  where
+    go :: Monad m => Workflow m x y -> Flow m x y
+    go Id = id
+    go (Seq w1 w2) = go w2 . go w1
+    go (Par w1 w2) = go w1 Control.Arrow.*** go w2
+    go (Step (NamedFlow _ f)) = f
+    go (Cache key w) = Flow $ \input -> do
+      -- For simplicity, we're not using the cache here yet
+      -- A real implementation would need serialization support
+      -- This is just demonstrating the structure
+      runFlow (go w) input
+    go (Recover w recovery) = Flow $ \input -> do
+      -- For simplicity, just run the main workflow for now
+      -- TODO: Implement proper error recovery
+      runFlow (go w) input
 
 -- | Smart constructor for creating a named step
 step :: Text -> (a -> m b) -> Workflow m a b

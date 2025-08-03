@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: AlgoFlow Documentation
+    url: https://github.com/norrisaftcc/tool-algoflow-hs/wiki
+    about: Check the wiki for detailed documentation
+  - name: Discussion Forum
+    url: https://github.com/norrisaftcc/tool-algoflow-hs/discussions
+    about: Ask questions and discuss ideas with the community

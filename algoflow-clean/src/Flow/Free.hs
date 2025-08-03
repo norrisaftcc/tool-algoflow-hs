@@ -25,6 +25,7 @@ module Flow.Free
     
     -- * Interpreters
   , runWorkflow
+  , runWorkflowWithCache
   , dryRun
   ) where
 
@@ -32,6 +33,8 @@ import Control.Monad.Free
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Flow.Cache as Cache
+import Control.Exception (catch, SomeException)
 
 -- | The functor that defines our workflow operations
 data WorkflowF a b next where
@@ -99,9 +102,41 @@ runWorkflow (Free step) input = case step of
     runWorkflow (next result) input
     
   Recover main fallback next -> do
-    -- TODO: Implement actual error handling
-    result <- runWorkflow main input
+    -- Try main workflow, use fallback on error
+    result <- liftIO $ catch 
+      (liftIO $ runWorkflow main input)
+      (\(_ :: SomeException) -> liftIO $ runWorkflow fallback input)
     runWorkflow (next result) input
+
+-- | Run a workflow with caching support
+runWorkflowWithCache :: MonadIO m => Cache.Cache m -> Workflow a b -> a -> m b
+runWorkflowWithCache cache = go
+  where
+    go :: MonadIO m => Workflow x y -> x -> m y
+    go (Pure b) _ = return b
+    go (Free f) input = case f of
+      Compute name action next -> do
+        result <- liftIO $ action input
+        go (next result) input
+        
+      Parallel w1 w2 next -> do
+        let (a, c) = input
+        b <- go w1 a
+        d <- go w2 c
+        go (next (b, d)) input
+        
+      Cached key w next -> do
+        -- Here we'd use the cache, but we need serialization
+        -- For now, just run the workflow
+        result <- go w input
+        go (next result) input
+        
+      Recover main fallback next -> do
+        -- Try main workflow, use fallback on error
+        result <- liftIO $ catch 
+          (liftIO $ go main input)
+          (\(_ :: SomeException) -> liftIO $ go fallback input)
+        go (next result) input
 
 -- | Dry run interpreter that just describes what would happen
 dryRun :: Workflow a b -> Text
@@ -111,22 +146,22 @@ dryRun = go 0
     go depth (Pure _) = indent depth <> "Pure result\n"
     go depth (Free step) = case step of
       Compute name _ next -> 
-        indent depth <> "Compute: " <> name <> "\n" <>
+        indent depth <> "compute: " <> name <> "\n" <>
         go (depth + 1) (next undefined)
         
       Parallel w1 w2 next ->
-        indent depth <> "Parallel:\n" <>
+        indent depth <> "parallel:\n" <>
         indent (depth + 1) <> "Branch 1:\n" <> go (depth + 2) w1 <>
         indent (depth + 1) <> "Branch 2:\n" <> go (depth + 2) w2 <>
         go depth (next undefined)
         
       Cached key w next ->
-        indent depth <> "Cache[" <> key <> "]:\n" <>
+        indent depth <> "cache[" <> key <> "]:\n" <>
         go (depth + 1) w <>
         go depth (next undefined)
         
       Recover main fallback next ->
-        indent depth <> "Recover:\n" <>
+        indent depth <> "recover:\n" <>
         indent (depth + 1) <> "Try:\n" <> go (depth + 2) main <>
         indent (depth + 1) <> "Fallback:\n" <> go (depth + 2) fallback <>
         go depth (next undefined)
