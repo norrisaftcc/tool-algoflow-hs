@@ -59,7 +59,7 @@ spec = describe "Flow.Core" $ do
       it "sequences workflows" $ do
         let w1 = step "add5" (\x -> return (x + 5))
             w2 = step "mul2" (\x -> return (x * 2))
-            combined = w1 >>> w2
+            combined = Seq w1 w2
             flow = interpret combined
         runFlow flow 3 `shouldReturn` 16  -- (3 + 5) * 2
     
@@ -67,7 +67,7 @@ spec = describe "Flow.Core" $ do
       it "runs workflows in parallel" $ do
         let w1 = step "add10" (\x -> return (x + 10))
             w2 = step "mul3" (\x -> return (x * 3))
-            parallel = w1 *** w2
+            parallel = Par w1 w2
             flow = interpret parallel
         runFlow flow (5, 7) `shouldReturn` (15, 21)  -- (5+10, 7*3)
     

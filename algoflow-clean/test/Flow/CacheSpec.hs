@@ -125,11 +125,11 @@ spec = describe "Flow.Cache" $ do
       
       -- First call - compute and store
       result1 <- withCache cache "factorial" (1000 :: Int) deserialize serialize (expensive 1000)
-      result1 `shouldBe` 500500
+      result1 `shouldBe` (500500 :: Int)
       
       -- Second call - retrieve from cache (same result)
       result2 <- withCache cache "factorial" (1000 :: Int) deserialize serialize (expensive 1000)
-      result2 `shouldBe` 500500
+      result2 `shouldBe` (500500 :: Int)
     
     it "respects different workflow names" $ do
       cache <- inMemoryCache

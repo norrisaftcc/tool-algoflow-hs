@@ -6,7 +6,8 @@ module Flow.FreeSpec where
 
 import Test.Hspec
 import Test.QuickCheck
-import Flow.Free
+import Flow.Free hiding (parallel)
+import qualified Flow.Free as Free
 import Control.Monad.Free
 
 spec :: Spec
@@ -47,7 +48,7 @@ spec = describe "Flow.Free" $ do
     it "runs two workflows in parallel" $ do
       let wf1 = compute "left" (\x -> return (x + 10))
           wf2 = compute "right" (\x -> return (x * 3))
-          parallel_wf = parallel wf1 wf2
+          parallel_wf = Free.parallel wf1 wf2
       result <- runWorkflow parallel_wf (5, 7)
       result `shouldBe` (15, 21)  -- (5+10, 7*3)
     
@@ -55,7 +56,7 @@ spec = describe "Flow.Free" $ do
       let wf1 = compute "branch1" (\x -> return (x * 2))
           wf2 = compute "branch2" (\x -> return (x + 100))
           combined = do
-            (a, b) <- parallel wf1 wf2
+            (a, b) <- Free.parallel wf1 wf2
             return (a + b)
       result <- runWorkflow combined (5, 3)
       result `shouldBe` 113  -- (5*2) + (3+100) = 10 + 103
@@ -110,8 +111,8 @@ spec = describe "Flow.Free" $ do
             -- Run both branches on the same preprocessed value
             squared <- branch1  -- 6 -> 36 (cached)
             added <- branch2    -- 6 -> 16
-            return (squared + added)  -- 36 + 16 = 52
-          ) recovery_fallback
+            return (squared + added))  -- 36 + 16 = 52
+            recovery_fallback
       
       result <- runWorkflow full_workflow 5
       result `shouldBe` 52  -- preprocess: 5->6, branch1: 6->36, branch2: 6->16, combine: 52
@@ -128,7 +129,7 @@ spec = describe "Flow.Free" $ do
       dry_output `shouldContain` "step2"
     
     it "shows workflow structure" $ do
-      let parallel_wf = parallel 
+      let parallel_wf = Free.parallel 
             (compute "left-branch" return)
             (compute "right-branch" return)
           dry_output = dryRun parallel_wf
