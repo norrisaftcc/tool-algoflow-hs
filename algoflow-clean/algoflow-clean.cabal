@@ -30,6 +30,8 @@ library
                     , Flow.Graph
                     , Flow.Execute
                     , Flow.Example
+                    , Flow.Typed
+                    , Flow.Cache
     build-depends:    base ^>=4.17.0.0
                     , text
                     , containers
@@ -42,6 +44,12 @@ library
                     , mtl
                     , transformers
                     , exceptions
+                    , aeson
+                    , wai
+                    , warp
+                    , http-types
+                    , bytestring
+                    , hashable
     hs-source-dirs:   src
     default-language: Haskell2010
     default-extensions: 
@@ -49,6 +57,29 @@ library
         DeriveFunctor
         DeriveGeneric
         ScopedTypeVariables
+
+executable algoflow-mcp-server
+    import:           warnings
+    main-is:          Main.hs
+    other-modules:    WorkflowBridge
+    build-depends:    base ^>=4.17.0.0
+                    , algoflow-clean
+                    , text
+                    , aeson
+                    , wai
+                    , warp
+                    , http-types
+                    , bytestring
+                    , containers
+                    , async
+                    , stm
+    hs-source-dirs:   mcp-server
+    default-language: Haskell2010
+    default-extensions: 
+        OverloadedStrings
+        DeriveGeneric
+        RecordWildCards
+        GADTs
 
 test-suite algoflow-test
     import:           warnings
