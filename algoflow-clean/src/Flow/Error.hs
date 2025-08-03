@@ -19,9 +19,10 @@ module Flow.Error
   , withCircuitBreaker
   ) where
 
-import Control.Exception (Exception, SomeException, catch, throwIO)
+import Control.Exception (Exception, SomeException, throwIO)
 import Control.Monad (when)
 import Control.Monad.IO.Class (MonadIO, liftIO)
+import Control.Monad.Catch (MonadCatch, catch)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time (UTCTime, getCurrentTime, diffUTCTime, NominalDiffTime)
@@ -92,7 +93,7 @@ exponentialBackoff maxAttempts = RetryPolicy
   }
 
 -- | Handle workflow errors with recovery strategy
-handleWorkflowError :: MonadIO m 
+handleWorkflowError :: (MonadIO m, MonadCatch m)
                     => Text                  -- ^ Workflow name
                     -> Text                  -- ^ Step name
                     -> ErrorRecovery m a     -- ^ Recovery strategy
@@ -105,15 +106,14 @@ handleWorkflowError workflow step recovery action =
     Retry policy -> withRetry workflow step policy action
     
     Fallback fallback -> 
-      liftIO (catch (liftIO action) $ \(_ :: SomeException) -> liftIO fallback)
+      action `catch` (\(_ :: SomeException) -> fallback)
     
     RetryThenFallback policy fallback ->
-      liftIO $ catch 
-        (liftIO $ withRetry workflow step policy action)
-        (\(_ :: WorkflowError) -> liftIO fallback)
+      withRetry workflow step policy action `catch` 
+        (\(_ :: WorkflowError) -> fallback)
 
 -- | Execute an action with retry logic
-withRetry :: MonadIO m
+withRetry :: (MonadIO m, MonadCatch m)
           => Text            -- ^ Workflow name
           -> Text            -- ^ Step name  
           -> RetryPolicy m   -- ^ Retry policy
@@ -126,7 +126,7 @@ withRetry workflow step policy action = go 1
           liftIO $ throwIO $ RecoveryFailed $ 
             T.concat [workflow, ".", step, " failed after ", T.pack (show $ rpMaxAttempts policy), " attempts"]
       | otherwise = do
-          result <- liftIO $ catch (Right <$> liftIO action) $ \e -> 
+          result <- catch (Right <$> action) $ \e -> 
             return $ Left $ StepFailed (workflow <> "." <> step) e
           
           case result of
@@ -159,7 +159,7 @@ newCircuitBreaker threshold timeout = do
   return $ CircuitBreaker state failures lastFailure threshold timeout
 
 -- | Execute with circuit breaker protection
-withCircuitBreaker :: MonadIO m
+withCircuitBreaker :: (MonadIO m, MonadCatch m)
                    => Text            -- ^ Circuit name
                    -> CircuitBreaker  -- ^ Circuit breaker
                    -> m a             -- ^ Action to protect
@@ -182,7 +182,7 @@ withCircuitBreaker name breaker action = do
   
   where
     tryAction = do
-      result <- liftIO $ catch (Right <$> liftIO action) $ \e ->
+      result <- catch (Right <$> action) $ \e ->
         return $ Left $ StepFailed name e
       
       case result of

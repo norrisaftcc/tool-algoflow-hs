@@ -2,6 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Flow.Cache
   ( -- * Cache Interface
@@ -98,17 +99,17 @@ noOpCache = Cache
   }
 
 -- | Helper to create a cache key
-mkCacheKey :: (Typeable a, Typeable b, Hashable a) 
+mkCacheKey :: forall a b. (Typeable a, Typeable b, Hashable a) 
            => Text -> a -> Proxy b -> CacheKey
 mkCacheKey workflow input outputProxy = CacheKey
   { ckWorkflow = workflow
   , ckInputHash = hash input
-  , ckInputType = typeRep (Proxy :: Proxy a)
+  , ckInputType = typeRep (Proxy @a)
   , ckOutputType = typeRep outputProxy
   }
 
 -- | Use cache for a computation
-withCache :: (MonadIO m, Typeable a, Typeable b, Hashable a)
+withCache :: forall m a b. (MonadIO m, Typeable a, Typeable b, Hashable a)
           => Cache m
           -> Text                    -- ^ Workflow name
           -> a                       -- ^ Input
@@ -117,7 +118,7 @@ withCache :: (MonadIO m, Typeable a, Typeable b, Hashable a)
           -> m b                     -- ^ Computation
           -> m b
 withCache cache workflow input deserialize serialize compute = do
-  let key = mkCacheKey workflow input (Proxy :: Proxy b)
+  let key = mkCacheKey workflow input (Proxy @b)
   
   -- Try to get from cache
   cached <- cacheGet cache key

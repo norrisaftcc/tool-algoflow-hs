@@ -35,6 +35,7 @@ import qualified Data.Map.Strict as Map
 import Data.Text (Text)
 import Data.Time (UTCTime, getCurrentTime, diffUTCTime)
 import Data.Typeable (Typeable)
+import Data.Dynamic (Dynamic)
 
 import Flow.Core
 
@@ -73,22 +74,21 @@ instance Exception ExecutionError
 type Cache m = TVar (Map Text (ExecutionResult Dynamic))
 
 -- | Run a workflow with the given configuration
-runWorkflow :: forall m a b. MonadIO m 
-            => ExecutionConfig 
-            -> Workflow m a b 
+runWorkflow :: ExecutionConfig 
+            -> Workflow IO a b 
             -> a 
-            -> m (Either ExecutionError (ExecutionResult b))
+            -> IO (Either ExecutionError (ExecutionResult b))
 runWorkflow config workflow input = do
-  startTime <- liftIO getCurrentTime
-  cache <- liftIO $ newTVarIO Map.empty
+  startTime <- getCurrentTime
+  cache <- newTVarIO Map.empty
   
   -- Convert workflow to executable flow
   let flow = interpret workflow
   
   -- Execute with timing
-  result <- liftIO $ try $ runFlow flow input
+  result <- try $ runFlow flow input
   
-  endTime <- liftIO getCurrentTime
+  endTime <- getCurrentTime
   let duration = realToFrac $ diffUTCTime endTime startTime
   
   case result of
@@ -101,12 +101,11 @@ runWorkflow config workflow input = do
 
 -- | Execute workflows in parallel when possible
 -- This is a more sophisticated version that analyzes the workflow structure
-executeParallel :: MonadIO m 
-                => ExecutionConfig 
-                -> [(Text, Workflow m a b)] 
+executeParallel :: ExecutionConfig 
+                -> [(Text, Workflow IO a b)] 
                 -> a 
-                -> m (Map Text (Either ExecutionError (ExecutionResult b)))
-executeParallel config workflows input = liftIO $ do
+                -> IO (Map Text (Either ExecutionError (ExecutionResult b)))
+executeParallel config workflows input = do
   -- Create a pool of workers based on maxParallel config
   results <- mapConcurrently runOne workflows
   return $ Map.fromList results
