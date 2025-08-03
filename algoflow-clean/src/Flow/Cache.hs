@@ -45,7 +45,7 @@ data CacheEntry = CacheEntry
   { ceData :: !ByteString
   , ceCreated :: !UTCTime
   , ceHits :: !Int
-  } deriving (Show, Generic)
+  } deriving (Show, Eq, Generic)
 
 -- | Abstract cache interface
 data Cache m = Cache
