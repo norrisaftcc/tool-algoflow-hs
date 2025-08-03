@@ -15,6 +15,7 @@ library
                     , Verify
                     , Examples
                     , Analysis
+                    , Minimal
     build-depends:    base >=4.14 && <5
                     , async
                     , containers
@@ -25,6 +26,13 @@ library
 
 executable demo
     main-is:          Demo.hs
+    build-depends:    base >=4.14 && <5
+                    , graph-runner
+    hs-source-dirs:   .
+    default-language: Haskell2010
+
+executable minimal-demo
+    main-is:          MinimalDemo.hs
     build-depends:    base >=4.14 && <5
                     , graph-runner
     hs-source-dirs:   .
