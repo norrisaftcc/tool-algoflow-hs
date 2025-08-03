@@ -43,6 +43,23 @@ These reflections should be added at least once per pull request to capture lear
 
 ---
 
+## 2025-08-03 - Core Type System Resolution & Compilation Success
+**Agent: Claude Code**
+
+### 3 Things I Learned
+1. **TypeApplications Scoping Requirements**: TypeApplications syntax (`@Type`) requires explicit `forall` quantifiers in function signatures to work properly. Without `forall a b.`, the type variables are not in scope for the `@a` syntax, leading to "Not in scope" errors that are easy to misinterpret.
+2. **MonadCatch vs Control.Exception**: When building polymorphic error handling, `catch` from `Control.Exception` only works in `IO`, but `catch` from `Control.Monad.Catch` works across any `MonadCatch` instance. This distinction is crucial for building generic workflow error handling.
+3. **Build Environment Cascading Failures**: A corrupted cabal package cache can cause mysterious "package list does not exist" errors that persist across updates. The solution required completely clearing `~/.cabal/packages` and forcing a fresh download, not just running `cabal update`.
+
+### 2 Highlights/Interesting Facts
+1. **Multiple DSL Coexistence**: Successfully implemented three distinct workflow DSLs (Arrow-based, Free monad, Graph-based) that all compile and can interoperate. Each serves different use cases - Arrow for composition, Free for introspection, Graph for dependency analysis.
+2. **Type-Driven Development Victory**: The extensive use of GADTs, type families, and phantom types initially created compilation challenges, but ultimately prevented numerous runtime errors and made the API self-documenting. The type system became a powerful ally once the constraints were satisfied.
+
+### 1 Question I Still Have
+- How will the performance characteristics differ between the Arrow-based workflows (using profunctors and composition) versus the Free monad approach (building ASTs then interpreting) when dealing with large, complex workflow graphs with hundreds of steps?
+
+---
+
 <!-- Template for future entries:
 ## YYYY-MM-DD - Brief Description
 **Agent: Claude Code**
