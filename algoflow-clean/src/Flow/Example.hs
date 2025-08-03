@@ -12,8 +12,8 @@ No ByteStrings everywhere, no stringly-typed nonsense.
 module Flow.Example where
 
 import Control.Arrow
-import Control.Category (>>>)
-import Prelude hiding ((>>>))
+import Control.Category
+import Prelude hiding ((.), id)
 
 import Flow.Core
 import Flow.Free

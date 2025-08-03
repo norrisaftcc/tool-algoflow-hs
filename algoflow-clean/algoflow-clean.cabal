@@ -32,7 +32,8 @@ library
                     , Flow.Example
                     , Flow.Typed
                     , Flow.Cache
-    build-depends:    base ^>=4.17.0.0
+                    , Flow.Error
+    build-depends:    base >=4.17.0.0 && <5
                     , text
                     , containers
                     , async
@@ -62,7 +63,7 @@ executable algoflow-mcp-server
     import:           warnings
     main-is:          Main.hs
     other-modules:    WorkflowBridge
-    build-depends:    base ^>=4.17.0.0
+    build-depends:    base >=4.17.0.0 && <5
                     , algoflow-clean
                     , text
                     , aeson
@@ -87,7 +88,19 @@ test-suite algoflow-test
     type:             exitcode-stdio-1.0
     hs-source-dirs:   test
     main-is:          Spec.hs
-    build-depends:    base ^>=4.17.0.0
+    other-modules:    Flow.CoreSpec
+                    , Flow.FreeSpec
+                    , Flow.GraphSpec
+                    , Flow.ExecuteSpec
+                    , Flow.CacheSpec
+    build-depends:    base >=4.17.0.0 && <5
                     , algoflow-clean
                     , hspec
+                    , hspec-discover
                     , QuickCheck
+                    , containers
+                    , time
+                    , async
+                    , stm
+                    , algebraic-graphs
+                    , free
