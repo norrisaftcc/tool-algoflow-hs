@@ -69,12 +69,14 @@ spec = describe "Flow.Execute" $ do
   describe "Error handling" $ do
     it "catches synchronous errors" $ do
       engine <- newEngine
-      let flow = step "failing" (\(_ :: Int) -> error "boom!" :: Int)
+      let flow = step "failing" (\(_ :: Int) -> do
+                                    let x = 5 `div` 0  -- Controlled division by zero
+                                    return x)
       taskId <- executeFlow engine "error-test" flow 42
       result <- waitForTask engine taskId
       result `shouldSatisfy` isLeft
       case result of
-        Left (FlowExecutionError _ msg) -> msg `shouldContain` "boom!"
+        Left (FlowExecutionError _ msg) -> msg `shouldContain` "divide by zero"
         _ -> expectationFailure "Expected FlowExecutionError"
     
     it "handles division by zero" $ do

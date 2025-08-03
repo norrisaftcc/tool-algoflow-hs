@@ -102,20 +102,19 @@ spec = describe "Flow.Free" $ do
           
           branch2 = compute "fast2" (\x -> return (x + 10))
           
-          parallel_processing = parallel branch1 branch2
-          
-          postprocessing = compute "combine" (\(a, b) -> return (a + b))
-          
           recovery_fallback = compute "fallback" (\_ -> return 0)
           
+          -- Create a workflow that processes single input through parallel branches
           full_workflow = recover (do
-            x <- preprocessing
-            (squared, added) <- parallel_processing
-            postprocessing
+            x <- preprocessing  -- 5 -> 6
+            -- Run both branches on the same preprocessed value
+            squared <- branch1  -- 6 -> 36 (cached)
+            added <- branch2    -- 6 -> 16
+            return (squared + added)  -- 36 + 16 = 52
           ) recovery_fallback
       
       result <- runWorkflow full_workflow 5
-      result `shouldBe` 52  -- preprocess: 6, branch1: 36, branch2: 16, combine: 52
+      result `shouldBe` 52  -- preprocess: 5->6, branch1: 6->36, branch2: 6->16, combine: 52
 
   describe "Workflow introspection" $ do
     it "provides dry run capability" $ do

@@ -36,13 +36,13 @@ spec = describe "Flow.Core" $ do
         runFlow (arr id) x `shouldReturnSame` runFlow id x
       
       it "arr (f >>> g) = arr f >>> arr g" $ property $ \(x :: Int) ->
-        let f = (+10)
-            g = (*2)
-        in runFlow (arr (f >>> g)) x `shouldReturnSame` runFlow (arr f >>> arr g) x
+        let addTen = (+10)
+            multiplyBy2 = (*2)
+        in runFlow (arr (addTen >>> multiplyBy2)) x `shouldReturnSame` runFlow (arr addTen >>> arr multiplyBy2) x
       
       it "first (arr f) = arr (first f)" $ property $ \(x :: Int, y :: String) ->
-        let f = (*2)
-        in runFlow (first (arr f)) (x, y) `shouldReturnSame` runFlow (arr (first f)) (x, y)
+        let doubleInt = (*2)
+        in runFlow (first (arr doubleInt)) (x, y) `shouldReturnSame` runFlow (arr (first doubleInt)) (x, y)
 
   describe "Workflow GADT" $ do
     describe "Basic workflow construction" $ do
