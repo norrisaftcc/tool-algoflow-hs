@@ -7,8 +7,9 @@
 module Flow.Cache
   ( -- * Cache Interface
     Cache(..)
-  , CacheKey
+  , CacheKey(..)
   , CacheEntry(..)
+  , mkCacheKey
     
     -- * Cache Implementations
   , inMemoryCache

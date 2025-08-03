@@ -1,0 +1,346 @@
+{
+  "workflows": {
+    "my-pipeline": {
+      "name": "my-pipeline",
+      "steps": [
+        {
+          "name": "step1",
+          "type": "transform"
+        },
+        {
+          "name": "step2",
+          "type": "enrich"
+        },
+        {
+          "name": "step3",
+          "type": "filter"
+        }
+      ],
+      "created": "2025-08-03T00:43:15.786Z"
+    },
+    "math-demo": {
+      "name": "math-demo",
+      "steps": [
+        {
+          "name": "doubleIt",
+          "type": "double"
+        },
+        {
+          "name": "doubleAgain",
+          "type": "double"
+        }
+      ],
+      "created": "2025-08-03T00:11:57.534Z"
+    }
+  },
+  "executions": {
+    "exec_1": {
+      "id": "exec_1",
+      "workflowId": "double",
+      "input": 21,
+      "output": {
+        "status": "success",
+        "result": 42,
+        "executionTime": 0,
+        "trace": [
+          "Executing double (double)"
+        ]
+      },
+      "timestamp": "2025-08-03T00:10:41.634Z"
+    },
+    "exec_2": {
+      "id": "exec_2",
+      "workflowId": "my-pipeline",
+      "input": {
+        "test": "data",
+        "foo": "bar"
+      },
+      "output": {
+        "status": "success",
+        "result": {
+          "test": "data",
+          "foo": "bar",
+          "transformed": true,
+          "step": "step1",
+          "enriched": true,
+          "timestamp": "2025-08-03T00:10:42.635Z"
+        },
+        "executionTime": 0,
+        "trace": [
+          "Executing step1 (transform)",
+          "Executing step2 (enrich)",
+          "Executing step3 (filter)"
+        ]
+      },
+      "timestamp": "2025-08-03T00:10:42.635Z"
+    },
+    "exec_3": {
+      "id": "exec_3",
+      "workflowId": "double",
+      "input": 21,
+      "output": {
+        "status": "success",
+        "result": 42,
+        "executionTime": 0,
+        "trace": [
+          "Executing double (double)"
+        ]
+      },
+      "timestamp": "2025-08-03T00:11:56.532Z"
+    },
+    "exec_4": {
+      "id": "exec_4",
+      "workflowId": "pipeline",
+      "input": {
+        "value": 100
+      },
+      "output": {
+        "status": "success",
+        "result": {
+          "value": 100,
+          "transformed": true,
+          "step": "transform",
+          "enriched": true,
+          "timestamp": "2025-08-03T00:11:57.032Z"
+        },
+        "executionTime": 0,
+        "trace": [
+          "Executing transform (transform)",
+          "Executing enrich (enrich)",
+          "Executing filter (filter)"
+        ]
+      },
+      "timestamp": "2025-08-03T00:11:57.033Z"
+    },
+    "exec_5": {
+      "id": "exec_5",
+      "workflowId": "math-demo",
+      "input": 5,
+      "output": {
+        "status": "success",
+        "result": 20,
+        "executionTime": 0,
+        "trace": [
+          "Executing doubleIt (double)",
+          "Executing doubleAgain (double)"
+        ]
+      },
+      "timestamp": "2025-08-03T00:11:58.036Z"
+    },
+    "exec_6": {
+      "id": "exec_6",
+      "workflowId": "double",
+      "input": 21,
+      "output": {
+        "status": "success",
+        "result": 42,
+        "executionTime": 0,
+        "trace": [
+          "Executing double (double)"
+        ]
+      },
+      "timestamp": "2025-08-03T00:12:15.188Z"
+    },
+    "exec_7": {
+      "id": "exec_7",
+      "workflowId": "double",
+      "input": 21,
+      "output": {
+        "status": "success",
+        "result": 42,
+        "executionTime": 0,
+        "trace": [
+          "Executing double (double)"
+        ]
+      },
+      "timestamp": "2025-08-03T00:41:07.872Z"
+    },
+    "exec_8": {
+      "id": "exec_8",
+      "workflowId": "my-pipeline",
+      "input": {
+        "test": "data",
+        "foo": "bar"
+      },
+      "output": {
+        "status": "success",
+        "result": {
+          "test": "data",
+          "foo": "bar",
+          "transformed": true,
+          "step": "step1",
+          "enriched": true,
+          "timestamp": "2025-08-03T00:41:08.874Z"
+        },
+        "executionTime": 0,
+        "trace": [
+          "Executing step1 (transform)",
+          "Executing step2 (enrich)",
+          "Executing step3 (filter)"
+        ]
+      },
+      "timestamp": "2025-08-03T00:41:08.874Z"
+    },
+    "exec_9": {
+      "id": "exec_9",
+      "workflowId": "double",
+      "input": 21,
+      "output": {
+        "status": "success",
+        "result": 42,
+        "executionTime": 0,
+        "trace": [
+          "Executing double (double)"
+        ]
+      },
+      "timestamp": "2025-08-03T00:41:47.475Z"
+    },
+    "exec_10": {
+      "id": "exec_10",
+      "workflowId": "my-pipeline",
+      "input": {
+        "test": "data",
+        "foo": "bar"
+      },
+      "output": {
+        "status": "success",
+        "result": {
+          "test": "data",
+          "foo": "bar",
+          "transformed": true,
+          "step": "step1",
+          "enriched": true,
+          "timestamp": "2025-08-03T00:41:48.479Z"
+        },
+        "executionTime": 0,
+        "trace": [
+          "Executing step1 (transform)",
+          "Executing step2 (enrich)",
+          "Executing step3 (filter)"
+        ]
+      },
+      "timestamp": "2025-08-03T00:41:48.479Z"
+    },
+    "exec_11": {
+      "id": "exec_11",
+      "workflowId": "double",
+      "input": 21,
+      "output": {
+        "status": "success",
+        "result": 42,
+        "executionTime": 0,
+        "trace": [
+          "Executing double (double)"
+        ]
+      },
+      "timestamp": "2025-08-03T00:42:16.630Z"
+    },
+    "exec_12": {
+      "id": "exec_12",
+      "workflowId": "my-pipeline",
+      "input": {
+        "test": "data",
+        "foo": "bar"
+      },
+      "output": {
+        "status": "success",
+        "result": {
+          "test": "data",
+          "foo": "bar",
+          "transformed": true,
+          "step": "step1",
+          "enriched": true,
+          "timestamp": "2025-08-03T00:42:17.633Z"
+        },
+        "executionTime": 0,
+        "trace": [
+          "Executing step1 (transform)",
+          "Executing step2 (enrich)",
+          "Executing step3 (filter)"
+        ]
+      },
+      "timestamp": "2025-08-03T00:42:17.633Z"
+    },
+    "exec_13": {
+      "id": "exec_13",
+      "workflowId": "double",
+      "input": 21,
+      "output": {
+        "status": "success",
+        "result": 42,
+        "executionTime": 0,
+        "trace": [
+          "Executing double (double)"
+        ]
+      },
+      "timestamp": "2025-08-03T00:43:05.782Z"
+    },
+    "exec_14": {
+      "id": "exec_14",
+      "workflowId": "my-pipeline",
+      "input": {
+        "test": "data",
+        "foo": "bar"
+      },
+      "output": {
+        "status": "success",
+        "result": {
+          "test": "data",
+          "foo": "bar",
+          "transformed": true,
+          "step": "step1",
+          "enriched": true,
+          "timestamp": "2025-08-03T00:43:06.786Z"
+        },
+        "executionTime": 0,
+        "trace": [
+          "Executing step1 (transform)",
+          "Executing step2 (enrich)",
+          "Executing step3 (filter)"
+        ]
+      },
+      "timestamp": "2025-08-03T00:43:06.786Z"
+    },
+    "exec_15": {
+      "id": "exec_15",
+      "workflowId": "double",
+      "input": 21,
+      "output": {
+        "status": "success",
+        "result": 42,
+        "executionTime": 0,
+        "trace": [
+          "Executing double (double)"
+        ]
+      },
+      "timestamp": "2025-08-03T00:43:15.285Z"
+    },
+    "exec_16": {
+      "id": "exec_16",
+      "workflowId": "my-pipeline",
+      "input": {
+        "test": "data",
+        "foo": "bar"
+      },
+      "output": {
+        "status": "success",
+        "result": {
+          "test": "data",
+          "foo": "bar",
+          "transformed": true,
+          "step": "step1",
+          "enriched": true,
+          "timestamp": "2025-08-03T00:43:16.287Z"
+        },
+        "executionTime": 0,
+        "trace": [
+          "Executing step1 (transform)",
+          "Executing step2 (enrich)",
+          "Executing step3 (filter)"
+        ]
+      },
+      "timestamp": "2025-08-03T00:43:16.287Z"
+    }
+  },
+  "counter": 16
+}

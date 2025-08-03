@@ -16,7 +16,7 @@ import GHC.Generics
 -- Import from AlgoFlow
 import Flow.Core
 import Flow.Execute
-import Flow.Free
+import qualified Flow.Free as Free
 -- import Flow.Example (exampleFlow1, exampleFlow2)  -- Disabled temporarily
 
 -- JSON representations
@@ -64,10 +64,10 @@ executePredefinedWorkflow name input = case M.lookup name predefinedWorkflows of
     Just flow -> do
         let config = ExecutionConfig
                 { maxParallel = 4
-                , enableCaching = False
-                , timeout = Nothing
+                , enableCache = False
+                , cacheDir = Nothing
                 }
-        result <- runWorkflow config flow input
+        result <- Execute.runWorkflow config flow input
         case result of
             Right (ExecutionResult value _ duration _) -> return WorkflowResult
                 { resultStatus = "success"
@@ -119,10 +119,10 @@ executeWorkflowFromSpec spec input = case createSimpleWorkflow spec of
     Just flow -> do
         let config = ExecutionConfig
                 { maxParallel = 4
-                , enableCaching = False
-                , timeout = Nothing
+                , enableCache = False
+                , cacheDir = Nothing
                 }
-        result <- runWorkflow config flow input
+        result <- Execute.runWorkflow config flow input
         case result of
             Right (ExecutionResult value _ duration _) -> return WorkflowResult
                 { resultStatus = "success"

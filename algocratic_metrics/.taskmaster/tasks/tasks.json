@@ -1,0 +1,307 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Setup Project Repository and Environment",
+        "description": "Initialize the project repository with the required dependencies and structure for the AlgoCratic Metrics dashboard.",
+        "details": "1. Create a new GitHub repository named 'algocratic-metrics'\n2. Set up Python virtual environment with Python 3.8+\n3. Create requirements.txt with dependencies: streamlit, pandas, plotly, numpy, sqlite3\n4. Initialize basic project structure:\n   - app.py (main Streamlit entry point)\n   - data/ (for synthetic data generation)\n   - models/ (for data processing)\n   - utils/ (helper functions)\n   - assets/ (for static files)\n   - tests/ (for unit tests)\n5. Create a basic README.md with project description\n6. Set up .gitignore for Python projects\n7. Configure GitHub Actions for basic CI/CD",
+        "testStrategy": "Verify that the repository is properly initialized with all required files. Test the virtual environment setup by installing dependencies and confirming they work correctly. Run a basic Streamlit app to ensure the environment is properly configured.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Initialize Git Repository and Project Structure",
+            "description": "Create a new GitHub repository and set up the basic project structure with all necessary directories and files.",
+            "dependencies": [],
+            "details": "1. Create a new GitHub repository named 'algocratic-metrics'\n2. Clone the repository locally\n3. Create the following directory structure:\n   - data/ (for synthetic data generation)\n   - models/ (for data processing)\n   - utils/ (helper functions)\n   - assets/ (for static files)\n   - tests/ (for unit tests)\n   - pages/ (for different dashboard pages)\n4. Create initial placeholder files:\n   - app.py (main Streamlit entry point)\n   - README.md with project description\n   - .gitignore for Python projects\n5. Add GitHub Actions workflow file (.github/workflows/ci.yml) for basic CI/CD\n6. Make initial commit and push to GitHub",
+            "status": "done",
+            "testStrategy": "Verify that all directories and files exist in the correct structure. Confirm that GitHub repository is properly initialized with README and .gitignore. Check that GitHub Actions workflow is valid."
+          },
+          {
+            "id": 2,
+            "title": "Set Up Python Environment and Dependencies",
+            "description": "Configure the Python virtual environment and install all required dependencies for the project.",
+            "dependencies": [],
+            "details": "1. Create a Python virtual environment using Python 3.8+:\n   ```\n   python -m venv venv\n   ```\n2. Activate the virtual environment:\n   - Windows: `venv\\Scripts\\activate`\n   - Unix/MacOS: `source venv/bin/activate`\n3. Create requirements.txt with the following dependencies:\n   ```\n   streamlit==1.24.0\n   pandas==2.0.3\n   plotly==5.15.0\n   numpy==1.24.3\n   pytest==7.3.1\n   black==23.3.0\n   flake8==6.0.0\n   ```\n4. Install the dependencies:\n   ```\n   pip install -r requirements.txt\n   ```\n5. Create a setup.py file for package installation\n6. Add environment setup instructions to README.md",
+            "status": "pending",
+            "testStrategy": "Verify that the virtual environment is created correctly. Test that all dependencies can be installed without conflicts. Run a simple script to import each package to confirm they're working."
+          },
+          {
+            "id": 3,
+            "title": "Implement Basic Streamlit App Structure",
+            "description": "Create the main Streamlit application entry point with navigation and styling for the dystopian dashboard.",
+            "dependencies": [],
+            "details": "1. Create app.py with basic Streamlit configuration:\n   ```python\n   import streamlit as st\n   \n   st.set_page_config(\n       page_title=\"AlgoCratic Metrics\",\n       page_icon=\"⚙️\",\n       layout=\"wide\",\n       initial_sidebar_state=\"expanded\"\n   )\n   ```\n2. Add custom CSS for dystopian theme in assets/style.css:\n   - Dark background\n   - Phosphor green text and accents\n   - Monospace fonts\n3. Load the custom CSS in app.py\n4. Create sidebar navigation structure with sections for:\n   - Productivity Tracker\n   - Compliance Monitoring\n   - Loyalty Indicators\n   - Department Analytics\n   - System Status\n5. Add placeholder content for the main dashboard\n6. Implement session state management for user preferences\n7. Create a utils/ui.py file with helper functions for consistent UI elements",
+            "status": "pending",
+            "testStrategy": "Run the Streamlit app locally and verify that it launches without errors. Check that the navigation sidebar displays correctly. Confirm that the custom CSS styling is applied properly. Test navigation between different sections."
+          },
+          {
+            "id": 4,
+            "title": "Create Configuration and Environment Management",
+            "description": "Implement configuration management for different environments (development, testing, production) and set up logging.",
+            "dependencies": [],
+            "details": "1. Create a config/ directory for configuration files\n2. Implement config/settings.py with configuration classes:\n   ```python\n   class BaseConfig:\n       # Common settings\n       APP_NAME = \"AlgoCratic Metrics\"\n       LOG_LEVEL = \"INFO\"\n   \n   class DevConfig(BaseConfig):\n       # Development settings\n       ENV = \"development\"\n       DEBUG = True\n   \n   class ProdConfig(BaseConfig):\n       # Production settings\n       ENV = \"production\"\n       DEBUG = False\n   ```\n3. Create utils/logger.py for centralized logging:\n   ```python\n   import logging\n   from config.settings import BaseConfig\n   \n   def setup_logger():\n       logger = logging.getLogger(BaseConfig.APP_NAME)\n       # Configure logger\n       return logger\n   ```\n4. Implement environment variable loading with python-dotenv\n5. Add .env.example file with sample configuration\n6. Update .gitignore to exclude .env files\n7. Create utility functions to load appropriate config based on environment",
+            "status": "pending",
+            "testStrategy": "Test configuration loading with different environment variables. Verify that the correct configuration is loaded for each environment. Check that logging works correctly at different log levels. Ensure sensitive information is not committed to the repository."
+          },
+          {
+            "id": 5,
+            "title": "Set Up Testing Framework and Documentation",
+            "description": "Configure the testing framework, create initial tests, and establish documentation structure for the project.",
+            "dependencies": [],
+            "details": "1. Set up pytest in the tests/ directory:\n   - Create tests/conftest.py with common fixtures\n   - Add tests/test_config.py to test configuration loading\n   - Create tests/test_app.py for basic app tests\n2. Configure pytest.ini with test settings\n3. Create a Makefile with common commands:\n   ```\n   test:\n       pytest\n   \n   lint:\n       flake8 .\n       black --check .\n   \n   format:\n       black .\n   ```\n4. Set up documentation structure:\n   - Create docs/ directory\n   - Add docs/architecture.md describing the system design\n   - Create docs/development.md with development guidelines\n5. Update README.md with:\n   - Project overview\n   - Installation instructions\n   - Usage examples\n   - Development setup\n   - Testing instructions\n6. Add docstring templates to key files",
+            "status": "pending",
+            "testStrategy": "Run the test suite to verify it's configured correctly. Check that linting and formatting tools work as expected. Verify that documentation is accessible and follows a consistent format. Ensure the Makefile commands execute without errors."
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Implement Synthetic Data Generation Engine",
+        "description": "Create a robust synthetic data generation system that produces realistic productivity metrics, compliance scores, and loyalty indicators for citizens.",
+        "details": "1. Create a `data_generator.py` module with the following classes:\n   - `CitizenGenerator`: Generates citizen profiles with IDs, departments, roles\n   - `ProductivityGenerator`: Creates realistic productivity scores (0-100) with time-based patterns\n   - `ComplianceGenerator`: Simulates git commits, code reviews, meeting attendance\n   - `LoyaltyGenerator`: Models algorithm praise, overtime, incident reporting\n2. Implement time-based patterns (Monday blues, Friday slumps)\n3. Add department-based variations in metrics\n4. Create random anomalies and incidents\n5. Ensure data is realistic with appropriate statistical distributions\n6. Generate at least 10,000 data points per session\n7. Include functions to stream data for real-time updates every 5 seconds",
+        "testStrategy": "Create unit tests to verify the statistical properties of generated data. Test time-based patterns to ensure they follow expected trends. Validate that anomalies occur at reasonable frequencies. Benchmark data generation to ensure it can produce 10,000+ points efficiently.",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement CitizenGenerator Class",
+            "description": "Create the CitizenGenerator class that generates realistic citizen profiles with unique IDs, departments, roles, and other relevant attributes.",
+            "dependencies": [],
+            "details": "Create a CitizenGenerator class in data_generator.py that:\n1. Generates unique citizen IDs following a specific format\n2. Assigns citizens to departments (Engineering, Operations, Research, etc.)\n3. Assigns appropriate roles within each department\n4. Sets clearance levels (RED, ORANGE, YELLOW, etc.)\n5. Includes demographic attributes for realism\n6. Implements batch generation for creating multiple profiles at once\n7. Ensures statistical distribution of attributes matches realistic organizational structures",
+            "status": "pending",
+            "testStrategy": "Test unique ID generation to ensure no duplicates. Verify department and role assignments follow valid combinations. Test batch generation for performance with 10,000+ profiles. Validate statistical distribution of attributes."
+          },
+          {
+            "id": 2,
+            "title": "Implement ProductivityGenerator Class",
+            "description": "Create the ProductivityGenerator class that generates realistic productivity scores with time-based patterns and variations.",
+            "dependencies": [
+              "2.1"
+            ],
+            "details": "Implement ProductivityGenerator class in data_generator.py that:\n1. Generates productivity scores on a scale of 0-100\n2. Implements time-based patterns like Monday blues and Friday slumps\n3. Creates daily productivity curves (morning productivity, post-lunch dip, etc.)\n4. Adds seasonal variations (quarterly cycles, holiday effects)\n5. Incorporates department-specific productivity baselines\n6. Generates realistic noise and variations in individual performance\n7. Includes methods for streaming real-time productivity updates",
+            "status": "pending",
+            "testStrategy": "Test time-based patterns to ensure they follow expected trends. Verify statistical properties of generated data. Test streaming functionality for performance and consistency. Validate that department variations are applied correctly."
+          },
+          {
+            "id": 3,
+            "title": "Implement ComplianceGenerator Class",
+            "description": "Create the ComplianceGenerator class that simulates compliance metrics such as git commits, code reviews, meeting attendance, and documentation quality.",
+            "dependencies": [
+              "2.1"
+            ],
+            "details": "Develop ComplianceGenerator class in data_generator.py that:\n1. Simulates git commit patterns (frequency, size, timing)\n2. Models code review participation and quality\n3. Generates meeting attendance records with realistic patterns\n4. Creates documentation quality metrics\n5. Incorporates role-specific compliance expectations\n6. Implements time-based variations in compliance behaviors\n7. Generates compliance anomalies (missed meetings, delayed commits)\n8. Provides methods for streaming real-time compliance updates",
+            "status": "pending",
+            "testStrategy": "Test that git commit patterns follow realistic distributions. Verify meeting attendance follows expected schedules. Test anomaly generation for appropriate frequency. Validate that role-specific compliance expectations are correctly applied."
+          },
+          {
+            "id": 4,
+            "title": "Implement LoyaltyGenerator Class",
+            "description": "Create the LoyaltyGenerator class that models loyalty indicators such as algorithm praise, overtime hours, incident reporting, and peer evaluations.",
+            "dependencies": [
+              "2.1"
+            ],
+            "details": "Implement LoyaltyGenerator class in data_generator.py that:\n1. Models frequency and enthusiasm of algorithm praise\n2. Generates realistic overtime hour patterns\n3. Simulates incident reporting behavior (frequency, detail level)\n4. Creates peer evaluation and reporting metrics\n5. Incorporates department and role-specific loyalty baselines\n6. Implements subtle correlations with productivity and compliance\n7. Generates loyalty anomalies and outliers\n8. Provides methods for streaming real-time loyalty updates",
+            "status": "pending",
+            "testStrategy": "Test that algorithm praise follows expected patterns. Verify overtime hours match realistic work patterns. Test incident reporting frequency for statistical validity. Validate correlations with other metrics for realism."
+          },
+          {
+            "id": 5,
+            "title": "Implement Time-Based Patterns and Department Variations",
+            "description": "Enhance all generator classes with comprehensive time-based patterns and department-specific variations to ensure realistic data generation.",
+            "dependencies": [
+              "2.2",
+              "2.3",
+              "2.4"
+            ],
+            "details": "Extend generator classes with:\n1. Implement weekly patterns (Monday blues, Friday slumps)\n2. Create monthly and quarterly cycles\n3. Add holiday and special event effects\n4. Implement department-specific baseline variations\n5. Create interdepartmental dependencies and correlations\n6. Model time-of-day productivity curves\n7. Implement seasonal trends across all metrics\n8. Create realistic noise and variations while maintaining patterns\n9. Ensure patterns are configurable and adjustable",
+            "status": "pending",
+            "testStrategy": "Test weekly patterns to ensure they follow expected trends. Verify department variations produce statistically significant differences. Test seasonal patterns for appropriate magnitude. Validate that interdepartmental correlations are realistic."
+          },
+          {
+            "id": 6,
+            "title": "Implement Data Streaming and Anomaly Generation",
+            "description": "Create functionality for streaming real-time data updates and generating random anomalies and incidents across all metrics.",
+            "dependencies": [
+              "2.2",
+              "2.3",
+              "2.4",
+              "2.5"
+            ],
+            "details": "Implement in data_generator.py:\n1. Create a DataStreamer class that provides real-time updates every 5 seconds\n2. Implement random anomaly generation with configurable frequency\n3. Create incident simulation (system outages, security breaches, etc.)\n4. Add methods for generating large batches (10,000+ data points)\n5. Implement data export functionality to various formats\n6. Create realistic correlation between anomalies across different metrics\n7. Add configuration options for controlling anomaly frequency and severity\n8. Ensure efficient performance for real-time streaming",
+            "status": "pending",
+            "testStrategy": "Benchmark data generation to ensure it can produce 10,000+ points efficiently. Test streaming functionality for consistent 5-second updates. Verify anomaly generation produces expected frequency and severity. Test correlation between related anomalies across different metrics."
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Develop SQLite Database for Historical Metrics",
+        "description": "Create a SQLite database to store historical productivity metrics, compliance scores, and loyalty indicators for trend analysis.",
+        "details": "1. Create a `database.py` module with SQLite connection handling\n2. Design and implement the following tables:\n   - Citizens (id, name, department, role, clearance_level)\n   - ProductivityMetrics (citizen_id, timestamp, score, notes)\n   - ComplianceMetrics (citizen_id, timestamp, git_commits, code_reviews, meeting_attendance, documentation_quality)\n   - LoyaltyMetrics (citizen_id, timestamp, praise_frequency, overtime_hours, incident_count, peer_reports)\n3. Implement CRUD operations for each table\n4. Create functions for aggregating historical data\n5. Add methods for detecting trends and anomalies\n6. Implement data retention policies\n7. Add database migration capabilities for future schema changes",
+        "testStrategy": "Create unit tests for all database operations. Test performance with large datasets to ensure query efficiency. Verify data integrity constraints and foreign key relationships. Test migration scripts to ensure they maintain data integrity.",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "Create Core Dashboard Layout and Navigation",
+        "description": "Develop the main Streamlit dashboard layout with dystopian aesthetic, navigation sidebar, and core structure for the monitoring interface.",
+        "details": "1. Create `app.py` as the main entry point\n2. Implement dark theme with phosphor green accents using custom CSS\n3. Design sidebar navigation with sections for:\n   - Productivity Tracker\n   - Compliance Monitoring\n   - Loyalty Indicators\n   - Department Analytics\n   - System Status\n4. Add AlgoCratic Metrics logo and branding\n5. Implement glitch effects for 'system anomalies'\n6. Create session state management for user preferences\n7. Add random 'motivational messages' that appear periodically\n8. Implement hidden 'easter eggs' for the resistance\n9. Ensure responsive design for different screen sizes\n10. Add authentication placeholder for different clearance levels",
+        "testStrategy": "Test navigation flow between different sections. Verify that the UI renders correctly across different browsers and screen sizes. Check that session state is maintained correctly. Ensure that the aesthetic matches the dystopian surveillance theme specified in the PRD.",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "Implement Citizen Productivity Tracker",
+        "description": "Develop the real-time productivity tracking module with visualizations for individual and comparative citizen performance metrics.",
+        "details": "1. Create `pages/productivity_tracker.py`\n2. Implement real-time productivity score visualization (0-100) using Plotly gauges\n3. Create historical trend charts with customizable time ranges\n4. Add department comparison bar charts\n5. Implement citizen search and filtering functionality\n6. Create anomaly detection visualization with highlighted outliers\n7. Add detailed citizen productivity profiles\n8. Implement auto-refresh functionality every 5 seconds\n9. Create export functionality for 'performance reviews'\n10. Add threshold alerts for underperforming citizens",
+        "testStrategy": "Test real-time updates to ensure they refresh properly every 5 seconds. Verify that charts render correctly with different data inputs. Test search and filtering functionality with various criteria. Ensure export functionality produces valid reports.",
+        "priority": "medium",
+        "dependencies": [
+          2,
+          3,
+          4
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "Develop Compliance Monitoring Module",
+        "description": "Create the compliance monitoring interface to track git commit frequency, code review participation, meeting attendance, and documentation quality.",
+        "details": "1. Create `pages/compliance_monitoring.py`\n2. Implement git commit frequency analysis charts\n3. Create code review participation rate visualizations\n4. Add meeting attendance tracking with calendar heatmaps\n5. Implement documentation quality score metrics\n6. Create compliance trend analysis over time\n7. Add department-level compliance comparisons\n8. Implement compliance threshold alerts\n9. Create detailed compliance reports for supervisors\n10. Add 'GitHub Actions' integration visualization for 'compliance verification'",
+        "testStrategy": "Test all visualization components with various data scenarios. Verify that compliance calculations are accurate. Test threshold alerts to ensure they trigger appropriately. Ensure that department comparisons render correctly with different data distributions.",
+        "priority": "medium",
+        "dependencies": [
+          2,
+          3,
+          4
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "Create Loyalty Indicators Dashboard",
+        "description": "Develop the loyalty monitoring interface to track algorithm praise frequency, voluntary overtime, resistance incidents, and peer reporting statistics.",
+        "details": "1. Create `pages/loyalty_indicators.py`\n2. Implement algorithm praise frequency visualization\n3. Create voluntary overtime hours tracking charts\n4. Add resistance incident tracking with timeline views\n5. Implement peer reporting statistics and leaderboards\n6. Create loyalty score calculation and trending\n7. Add department loyalty comparisons\n8. Implement loyalty threshold alerts\n9. Create detailed loyalty reports for management\n10. Add 'promotion candidate' identification based on loyalty metrics",
+        "testStrategy": "Test all loyalty visualization components with various scenarios. Verify that loyalty calculations are accurate. Test the promotion candidate identification algorithm with different data inputs. Ensure that incident tracking correctly displays timeline information.",
+        "priority": "medium",
+        "dependencies": [
+          2,
+          3,
+          4
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "Implement Department Analytics Module",
+        "description": "Create comprehensive department-level analytics for YELLOW clearance managers to compare team performance and resource optimization.",
+        "details": "1. Create `pages/department_analytics.py`\n2. Implement department-wide productivity visualizations\n3. Create team performance comparison charts\n4. Add resource utilization metrics\n5. Implement predictive analytics for 'resource optimization'\n6. Create department ranking leaderboards\n7. Add historical department performance trends\n8. Implement department goal tracking\n9. Create detailed department reports for YELLOW clearance\n10. Add department anomaly detection",
+        "testStrategy": "Test department-level aggregations for accuracy. Verify that team comparisons render correctly with different data distributions. Test predictive analytics with various scenarios. Ensure that department reports contain all required information for YELLOW clearance managers.",
+        "priority": "medium",
+        "dependencies": [
+          5,
+          6,
+          7
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "Develop Real-Time Update and Alert System",
+        "description": "Implement the real-time data streaming, auto-refresh functionality, and alert notification system for threshold violations.",
+        "details": "1. Create `utils/real_time.py` for handling streaming data\n2. Implement auto-refreshing dashboard functionality every 5 seconds\n3. Create alert notification system for threshold violations\n4. Add visual indicators for data freshness\n5. Implement websocket-like behavior using Streamlit's session state\n6. Create alert history and management\n7. Add alert severity levels and prioritization\n8. Implement alert acknowledgment system\n9. Create alert export functionality\n10. Add custom alert thresholds for different metrics",
+        "testStrategy": "Test auto-refresh functionality to ensure it updates every 5 seconds. Verify that alerts trigger correctly when thresholds are violated. Test alert history to ensure it maintains accurate records. Ensure that the system can handle multiple concurrent alerts.",
+        "priority": "high",
+        "dependencies": [
+          2,
+          3,
+          4
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "Implement Export and Reporting Functionality",
+        "description": "Create comprehensive export and reporting capabilities for generating 'performance reviews' and 'compliance reports'.",
+        "details": "1. Create `utils/reporting.py` for report generation\n2. Implement PDF export functionality for performance reviews\n3. Create CSV/Excel export for raw data\n4. Add scheduled report generation\n5. Implement report templates for different clearance levels\n6. Create email notification for report availability\n7. Add report archiving and history\n8. Implement custom report builder\n9. Create batch reporting for multiple citizens\n10. Add report branding with AlgoCratic Metrics logo",
+        "testStrategy": "Test PDF generation to ensure reports are formatted correctly. Verify that CSV/Excel exports contain all required data. Test scheduled reporting to ensure it runs at specified intervals. Ensure that report templates render correctly with different data inputs.",
+        "priority": "low",
+        "dependencies": [
+          5,
+          6,
+          7,
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 11,
+        "title": "Create Docker Deployment Configuration",
+        "description": "Develop Docker configuration for easy deployment of the AlgoCratic Metrics dashboard on minimal infrastructure.",
+        "details": "1. Create Dockerfile for the application\n2. Implement docker-compose.yml for local development\n3. Add production deployment configuration\n4. Create environment variable management\n5. Implement volume mapping for persistent data\n6. Add health checks and monitoring\n7. Create deployment documentation\n8. Implement resource constraints for minimal infrastructure\n9. Add backup and restore procedures\n10. Create CI/CD pipeline for Docker image building and deployment",
+        "testStrategy": "Test Docker build process to ensure it creates a valid image. Verify that the application runs correctly in the Docker container. Test environment variable configuration to ensure it works as expected. Ensure that data persistence works correctly with volume mapping.",
+        "priority": "low",
+        "dependencies": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 12,
+        "title": "Create Comprehensive Documentation",
+        "description": "Develop detailed documentation for the AlgoCratic Metrics dashboard, including user guides, technical documentation, and extension guides.",
+        "details": "1. Create README.md with comprehensive project overview\n2. Implement user guides for different clearance levels\n3. Add technical documentation for system architecture\n4. Create developer guides for extending metrics\n5. Implement API documentation\n6. Add troubleshooting guides\n7. Create sample 'compliance reports' documentation\n8. Implement documentation for synthetic data generation\n9. Add deployment and configuration guides\n10. Create maintenance and backup documentation",
+        "testStrategy": "Review documentation for completeness and accuracy. Test code examples to ensure they work as described. Verify that user guides cover all functionality. Ensure that extension guides provide sufficient detail for adding new metrics.",
+        "priority": "medium",
+        "dependencies": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "status": "pending",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-08-03T00:41:47.001Z",
+      "updated": "2025-08-03T00:43:37.560Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

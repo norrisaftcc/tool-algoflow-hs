@@ -10,184 +10,179 @@ import Test.QuickCheck
 import Flow.Cache
 import Data.Time
 import Data.Hashable
+import Data.Typeable
+import Data.ByteString (ByteString)
+import qualified Data.ByteString.Char8 as BS8
 import Control.Monad (forM_)
 
 spec :: Spec
 spec = describe "Flow.Cache" $ do
   describe "CacheKey" $ do
     it "creates consistent hash for same inputs" $ do
-      let key1 = CacheKey "test" (42 :: Int)
-          key2 = CacheKey "test" (42 :: Int)
-      hash key1 `shouldBe` hash key2
+      let key1 = mkCacheKey @Int @String "test" 42 (Proxy @String)
+          key2 = mkCacheKey @Int @String "test" 42 (Proxy @String)
+      key1 `shouldBe` key2
     
-    it "creates different hashes for different workflows" $ do
-      let key1 = CacheKey "workflow1" (42 :: Int)
-          key2 = CacheKey "workflow2" (42 :: Int)
-      hash key1 `shouldNotBe` hash key2
+    it "creates different keys for different workflows" $ do
+      let key1 = mkCacheKey @Int @String "workflow1" 42 (Proxy @String)
+          key2 = mkCacheKey @Int @String "workflow2" 42 (Proxy @String)
+      key1 `shouldNotBe` key2
     
-    it "creates different hashes for different inputs" $ do
-      let key1 = CacheKey "test" (42 :: Int)
-          key2 = CacheKey "test" (43 :: Int)
-      hash key1 `shouldNotBe` hash key2
+    it "creates different keys for different inputs" $ do
+      let key1 = mkCacheKey @Int @String "test" 42 (Proxy @String)
+          key2 = mkCacheKey @Int @String "test" 43 (Proxy @String)
+      key1 `shouldNotBe` key2
     
     it "handles various input types" $ property $ \(x :: Int, y :: String, z :: Bool) ->
-      let key1 = CacheKey "multi" (x, y, z)
-          key2 = CacheKey "multi" (x, y, z)
-      in hash key1 == hash key2
+      let key1 = mkCacheKey @(Int, String, Bool) @String "multi" (x, y, z) (Proxy @String)
+          key2 = mkCacheKey @(Int, String, Bool) @String "multi" (x, y, z) (Proxy @String)
+      in key1 == key2
 
   describe "CacheEntry" $ do
     it "stores value with timestamp" $ do
       now <- getCurrentTime
       let entry = CacheEntry
-            { entryValue = "test result"
-            , entryCreated = now
-            , entryAccessed = now
-            , entryHits = 0
+            { ceData = "test result"
+            , ceCreated = now
+            , ceHits = 0
             }
-      entryValue entry `shouldBe` "test result"
-      entryHits entry `shouldBe` 0
+      ceData entry `shouldBe` "test result"
+      ceHits entry `shouldBe` 0
     
     it "tracks access count" $ do
       now <- getCurrentTime
-      let entry = CacheEntry "value" now now 5
-      entryHits entry `shouldBe` 5
+      let entry = CacheEntry "value" now 5
+      ceHits entry `shouldBe` 5
 
   describe "Cache operations" $ do
     it "stores and retrieves values" $ do
-      cache <- newInMemoryCache
-      let key = CacheKey "test" (123 :: Int)
+      cache <- inMemoryCache
+      let key = mkCacheKey @Int @String "test" 123 (Proxy @String)
       
       -- Initially empty
-      result1 <- get cache key
+      result1 <- cacheGet cache key
       result1 `shouldBe` Nothing
       
       -- Store value
-      put cache key ("result" :: String)
+      cachePut cache key "result"
       
       -- Retrieve value
-      result2 <- get cache key
-      fmap entryValue result2 `shouldBe` Just "result"
+      result2 <- cacheGet cache key
+      fmap ceData result2 `shouldBe` Just "result"
     
-    it "updates access time and count on get" $ do
-      cache <- newInMemoryCache
-      let key = CacheKey "counter" ()
+    it "updates access count on get" $ do
+      cache <- inMemoryCache
+      let key = mkCacheKey @() @Int "counter" () (Proxy @Int)
       
       -- Store initial value
-      put cache key (42 :: Int)
+      cachePut cache key (BS8.pack "42")
       
       -- Get multiple times
-      Just entry1 <- get cache key
-      entryHits entry1 `shouldBe` 1
+      Just entry1 <- cacheGet cache key
+      ceHits entry1 `shouldBe` 1
       
-      Just entry2 <- get cache key
-      entryHits entry2 `shouldBe` 2
-      entryAccessed entry2 `shouldSatisfy` (>= entryAccessed entry1)
-    
-    it "evicts entries by count" $ do
-      cache <- newInMemoryCache
-      
-      -- Store many entries (more than typical cache limit)
-      forM_ [1..1000] $ \i -> do
-        let key = CacheKey "evict" (i :: Int)
-        put cache key (i * 2)
-      
-      -- Earlier entries might be evicted
-      result <- get cache (CacheKey "evict" (1 :: Int))
-      -- This test is implementation-dependent
-      -- In-memory cache might not evict, so we just verify no crash
-      case result of
-        Nothing -> pure ()  -- Was evicted
-        Just entry -> entryValue entry `shouldBe` 2
+      Just entry2 <- cacheGet cache key
+      ceHits entry2 `shouldBe` 2
     
     it "clears all entries" $ do
-      cache <- newInMemoryCache
+      cache <- inMemoryCache
       
       -- Store some entries
-      put cache (CacheKey "clear1" ()) "value1"
-      put cache (CacheKey "clear2" ()) "value2"
-      put cache (CacheKey "clear3" ()) "value3"
+      let key1 = mkCacheKey @() @String "clear1" () (Proxy @String)
+          key2 = mkCacheKey @() @String "clear2" () (Proxy @String)
+          key3 = mkCacheKey @() @String "clear3" () (Proxy @String)
+      
+      cachePut cache key1 "value1"
+      cachePut cache key2 "value2"
+      cachePut cache key3 "value3"
       
       -- Verify they exist
-      result1 <- get cache (CacheKey "clear1" ())
+      result1 <- cacheGet cache key1
       result1 `shouldNotBe` Nothing
       
       -- Clear cache
-      clear cache
+      cacheClear cache
       
       -- Verify all gone
-      result2 <- get cache (CacheKey "clear1" ())
-      result3 <- get cache (CacheKey "clear2" ())
-      result4 <- get cache (CacheKey "clear3" ())
+      result2 <- cacheGet cache key1
+      result3 <- cacheGet cache key2
+      result4 <- cacheGet cache key3
       
       result2 `shouldBe` Nothing
       result3 `shouldBe` Nothing
       result4 `shouldBe` Nothing
 
-  describe "Cacheable typeclass" $ do
-    it "provides default key generation for basic types" $ do
-      cacheKey (42 :: Int) `shouldNotBe` cacheKey (43 :: Int)
-      cacheKey ("hello" :: String) `shouldNotBe` cacheKey ("world" :: String)
-      cacheKey (True :: Bool) `shouldNotBe` cacheKey (False :: Bool)
-    
-    it "works with tuples" $ do
-      let key1 = cacheKey ((1, "a") :: (Int, String))
-          key2 = cacheKey ((1, "b") :: (Int, String))
-          key3 = cacheKey ((2, "a") :: (Int, String))
-      key1 `shouldNotBe` key2
-      key1 `shouldNotBe` key3
-      key2 `shouldNotBe` key3
-    
-    it "works with lists" $ do
-      cacheKey ([1,2,3] :: [Int]) `shouldNotBe` cacheKey ([1,2,3,4] :: [Int])
-      cacheKey (["a","b"] :: [String]) `shouldNotBe` cacheKey (["b","a"] :: [String])
-
-  describe "Cache integration with workflows" $ do
+  describe "Cache integration with withCache" $ do
     it "caches expensive computations" $ do
-      cache <- newInMemoryCache
+      cache <- inMemoryCache
       
       -- Simulate expensive computation
-      let expensive x = sum [1..x] :: Int
-          key = CacheKey "factorial" (1000 :: Int)
+      let expensive x = return $ BS8.pack $ show (sum [1..x] :: Int)
+          deserialize bs = case reads (BS8.unpack bs) of
+                            [(x, "")] -> Just x
+                            _ -> Nothing
+          serialize = BS8.pack . show
       
       -- First call - compute and store
-      put cache key (expensive 1000)
+      result1 <- withCache cache "factorial" (1000 :: Int) deserialize serialize (expensive 1000)
+      result1 `shouldBe` 500500
       
-      -- Second call - retrieve from cache
-      Just entry <- get cache key
-      entryValue entry `shouldBe` 500500  -- sum of 1..1000
-      entryHits entry `shouldBe` 1
+      -- Second call - retrieve from cache (same result)
+      result2 <- withCache cache "factorial" (1000 :: Int) deserialize serialize (expensive 1000)
+      result2 `shouldBe` 500500
     
     it "respects different workflow names" $ do
-      cache <- newInMemoryCache
+      cache <- inMemoryCache
       
-      let key1 = CacheKey "workflow1" (42 :: Int)
-          key2 = CacheKey "workflow2" (42 :: Int)
+      let serialize = BS8.pack
+          deserialize = Just . BS8.unpack
       
-      put cache key1 "result1"
-      put cache key2 "result2"
+      -- Different workflows, same input
+      result1 <- withCache cache "workflow1" (42 :: Int) deserialize serialize (return "result1")
+      result2 <- withCache cache "workflow2" (42 :: Int) deserialize serialize (return "result2")
       
-      Just entry1 <- get cache key1
-      Just entry2 <- get cache key2
-      
-      entryValue entry1 `shouldBe` "result1"
-      entryValue entry2 `shouldBe` "result2"
+      result1 `shouldBe` "result1"
+      result2 `shouldBe` "result2"
 
   describe "Cache statistics" $ do
     it "tracks cache performance" $ do
-      cache <- newInMemoryCache
-      let key = CacheKey "stats" ()
+      cache <- inMemoryCache
+      let key = mkCacheKey @() @String "stats" () (Proxy @String)
       
       -- Miss
-      miss <- get cache key
+      miss <- cacheGet cache key
       miss `shouldBe` Nothing
       
       -- Store
-      put cache key "cached"
+      cachePut cache key "cached"
       
       -- Hits
-      Just hit1 <- get cache key
-      Just hit2 <- get cache key
-      Just hit3 <- get cache key
+      Just hit1 <- cacheGet cache key
+      Just hit2 <- cacheGet cache key
+      Just hit3 <- cacheGet cache key
       
-      entryHits hit3 `shouldBe` 3
-      entryValue hit3 `shouldBe` "cached"
+      ceHits hit3 `shouldBe` 3
+      ceData hit3 `shouldBe` "cached"
+      
+      -- Check stats
+      stats <- cacheStats cache
+      length stats `shouldBe` 1
+      let (statsKey, hitCount) = head stats
+      statsKey `shouldBe` key
+      hitCount `shouldBe` 3
+
+  describe "No-op cache" $ do
+    it "never stores anything" $ do
+      let cache = noOpCache
+          key = mkCacheKey @Int @String "test" 42 (Proxy @String)
+      
+      -- Try to store
+      cachePut cache key "value"
+      
+      -- Should not be found
+      result <- cacheGet cache key
+      result `shouldBe` Nothing
+      
+      -- Stats should be empty
+      stats <- cacheStats cache
+      stats `shouldBe` []

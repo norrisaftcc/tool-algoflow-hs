@@ -1,0 +1,61 @@
+{
+  "name": "algoflow-mcp",
+  "version": "0.1.0",
+  "description": "AlgoFlow workflow engine MCP server",
+  "tools": [
+    {
+      "name": "create_workflow",
+      "description": "Create a new workflow from a specification",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "workflowName": {
+            "type": "string",
+            "description": "Name of the workflow"
+          },
+          "workflowSteps": {
+            "type": "array",
+            "description": "Array of workflow steps",
+            "items": {
+              "type": "object",
+              "properties": {
+                "stepName": {"type": "string"},
+                "stepType": {"type": "string", "enum": ["transform", "filter", "enrich"]},
+                "stepInputs": {"type": "object"},
+                "stepDependencies": {"type": "array", "items": {"type": "string"}}
+              },
+              "required": ["stepName", "stepType"]
+            }
+          }
+        },
+        "required": ["workflowName", "workflowSteps"]
+      }
+    },
+    {
+      "name": "execute_workflow",
+      "description": "Execute a workflow with given inputs",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "workflow_id": {
+            "type": "string",
+            "description": "ID of the workflow to execute"
+          },
+          "inputs": {
+            "type": ["object", "number"],
+            "description": "Input data for the workflow"
+          }
+        },
+        "required": ["workflow_id"]
+      }
+    },
+    {
+      "name": "list_workflows",
+      "description": "List all available workflows",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

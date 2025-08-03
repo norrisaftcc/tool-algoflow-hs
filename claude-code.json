@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "algoflow": {
+      "command": "node",
+      "args": ["/Users/norrisa/Documents/dev/github/tool-algoflow-hs/algoflow-clean/mcp-server/algoflow-node.mjs"],
+      "env": {}
+    }
+  }
+}

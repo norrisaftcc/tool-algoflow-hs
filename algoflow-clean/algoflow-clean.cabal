@@ -104,3 +104,6 @@ test-suite algoflow-test
                     , stm
                     , algebraic-graphs
                     , free
+                    , hashable
+                    , text
+                    , bytestring
