@@ -117,14 +117,14 @@ spec = describe "Flow.Core" $ do
       let preprocessing = step "preprocess" (\x -> return (x + 1))
           branch1 = step "branch1" (\x -> return (x * 2))
           branch2 = step "branch2" (\x -> return (x * 3))
-          parallel = branch1 *** branch2
+          parallel = Par branch1 branch2
           postprocessing = step "postprocess" (\(a, b) -> return (a + b))
           
           -- Preprocess, then run parallel branches, then combine
-          workflow = preprocessing >>> 
-                    step "duplicate" (\x -> return (x, x)) >>>
-                    parallel >>>
-                    postprocessing
+          workflow = Seq (Seq (Seq preprocessing 
+                                     (step "duplicate" (\x -> return (x, x))))
+                                parallel)
+                         postprocessing
           
           flow = interpret workflow
       -- Input 5: preprocess to 6, duplicate to (6,6), parallel to (12,18), combine to 30

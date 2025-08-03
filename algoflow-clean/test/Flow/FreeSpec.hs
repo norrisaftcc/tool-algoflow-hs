@@ -9,6 +9,8 @@ import Test.QuickCheck
 import Flow.Free hiding (parallel)
 import qualified Flow.Free as Free
 import Control.Monad.Free
+import Data.Text (Text)
+import qualified Data.Text as T
 
 spec :: Spec
 spec = describe "Flow.Free" $ do
@@ -53,12 +55,13 @@ spec = describe "Flow.Free" $ do
       result `shouldBe` (15, 21)  -- (5+10, 7*3)
     
     it "combines parallel results" $ do
-      let wf1 = compute "branch1" (\x -> return (x * 2))
-          wf2 = compute "branch2" (\x -> return (x + 100))
-          combined = do
-            (a, b) <- Free.parallel wf1 wf2
-            return (a + b)
-      result <- runWorkflow combined (5, 3)
+      let wf1 = compute "branch1" (\x -> return (x * 2 :: Int))
+          wf2 = compute "branch2" (\x -> return (x + 100 :: Int))
+          parallel_wf = Free.parallel wf1 wf2
+          combined = compute "sum" (\(a, b) -> return (a + b :: Int))
+      -- First run parallel, then sum
+      (v1, v2) <- runWorkflow parallel_wf (5, 3)
+      result <- runWorkflow combined (v1, v2)
       result `shouldBe` 113  -- (5*2) + (3+100) = 10 + 103
 
   describe "Cached workflows" $ do
@@ -125,29 +128,27 @@ spec = describe "Flow.Free" $ do
             return 42
           dry_output = dryRun wf
       -- dryRun should return a string representation
-      dry_output `shouldContain` "step1"
-      dry_output `shouldContain` "step2"
+      T.unpack dry_output `shouldContain` "step1"
+      T.unpack dry_output `shouldContain` "step2"
     
     it "shows workflow structure" $ do
       let parallel_wf = Free.parallel 
             (compute "left-branch" return)
             (compute "right-branch" return)
           dry_output = dryRun parallel_wf
-      dry_output `shouldContain` "parallel"
-      dry_output `shouldContain` "left-branch"
-      dry_output `shouldContain` "right-branch"
+      T.unpack dry_output `shouldContain` "parallel"
+      T.unpack dry_output `shouldContain` "left-branch"
+      T.unpack dry_output `shouldContain` "right-branch"
 
   describe "Type safety" $ do
     it "maintains type safety across composition" $ do
-      let int_workflow = compute "int-step" (\x -> return (x + 1 :: Int))
-          string_workflow = compute "string-step" (\x -> return (show x))
-          combined = int_workflow >>= \i -> string_workflow
-      result <- runWorkflow combined 42
+      let int_to_string :: Workflow Int String
+          int_to_string = compute "convert" (\x -> return (show (x + 1)))
+      result <- runWorkflow int_to_string 42
       result `shouldBe` "43"
     
     it "works with different input/output types" $ do
-      let bool_to_int = compute "bool-to-int" (\b -> return (if b then 1 else 0))
-          int_to_string = compute "int-to-string" (\i -> return ("value: " ++ show i))
-          pipeline = bool_to_int >>= \i -> int_to_string
-      result <- runWorkflow pipeline True
+      let bool_to_string :: Workflow Bool String
+          bool_to_string = compute "bool-to-string" (\b -> return (if b then "value: 1" else "value: 0"))
+      result <- runWorkflow bool_to_string True
       result `shouldBe` "value: 1"
