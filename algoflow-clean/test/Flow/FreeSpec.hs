@@ -111,9 +111,9 @@ spec = describe "Flow.Free" $ do
           -- Create a workflow that processes single input through parallel branches
           full_workflow = recover (do
             x <- preprocessing  -- 5 -> 6
-            -- Run both branches on the same preprocessed value
-            squared <- branch1  -- 6 -> 36 (cached)
-            added <- branch2    -- 6 -> 16
+            -- Run both branches on the preprocessed value x
+            squared <- compute "expensive1" (\_ -> return (x * x))  -- x=6 -> 36 (cached)
+            added <- compute "fast2" (\_ -> return (x + 10))        -- x=6 -> 16
             return (squared + added))  -- 36 + 16 = 52
             recovery_fallback
       

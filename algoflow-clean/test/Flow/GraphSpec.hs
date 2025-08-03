@@ -112,7 +112,7 @@ spec = describe "Flow.Graph" $ do
   describe "Complex node operations" $ do
     it "handles nodes with complex computations" $ do
       let fibonacci = node "fib" (\n -> return $ if n <= 1 then n else fibImpl n) :: Node Int Int
-          fibImpl n = let loop a b i = if i >= n then b else loop b (a + b) (i + 1)
+          fibImpl n = let loop a b i = if i >= n then a else loop b (a + b) (i + 1)
                       in loop 0 1 0
       
       result <- nodeComputation fibonacci 10

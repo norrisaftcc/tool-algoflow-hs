@@ -62,14 +62,13 @@ inMemoryCache = do
   cacheVar <- newMVar Map.empty
   return Cache
     { cacheGet = \key -> liftIO $ do
-        cache <- readMVar cacheVar
-        case Map.lookup key cache of
-          Nothing -> return Nothing
-          Just entry -> do
-            -- Update hit count
-            modifyMVar_ cacheVar $ \c ->
-              return $ Map.adjust (\e -> e { ceHits = ceHits e + 1 }) key c
-            return (Just entry)
+        modifyMVar cacheVar $ \cache ->
+          case Map.lookup key cache of
+            Nothing -> return (cache, Nothing)
+            Just entry -> do
+              let updatedEntry = entry { ceHits = ceHits entry + 1 }
+                  updatedCache = Map.insert key updatedEntry cache
+              return (updatedCache, Just updatedEntry)
     
     , cachePut = \key value -> liftIO $ do
         now <- getCurrentTime

@@ -27,7 +27,7 @@ module Flow.Execute
 
 import Control.Concurrent.Async (async, wait, mapConcurrently)
 import Control.Concurrent.STM
-import Control.Exception (Exception, SomeException, catch, try)
+import Control.Exception (Exception, SomeException, catch, try, evaluate)
 import Control.Monad (forM_, when)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Map.Strict (Map)
@@ -50,7 +50,7 @@ data ExecutionConfig = ExecutionConfig
 defaultConfig :: ExecutionConfig
 defaultConfig = ExecutionConfig
   { maxParallel = 4
-  , enableCache = True
+  , enableCache = False
   , cacheDir = Nothing
   }
 
@@ -85,8 +85,10 @@ runWorkflow config workflow input = do
   -- Convert workflow to executable flow
   let flow = interpret workflow
   
-  -- Execute with timing
-  result <- try $ runFlow flow input
+  -- Execute with timing, forcing evaluation to catch pure exceptions
+  result <- try $ do
+    value <- runFlow flow input
+    evaluate value  -- Force evaluation to catch arithmetic exceptions
   
   endTime <- getCurrentTime
   let duration = realToFrac $ diffUTCTime endTime startTime

@@ -46,6 +46,7 @@ import Data.Set (Set)
 import qualified Data.Set as Set
 import Data.Text (Text)
 import Data.Maybe (mapMaybe)
+import Control.Exception (evaluate)
 
 -- | A node in the computation graph
 data Node a b = Node
@@ -72,7 +73,9 @@ data SomeNode where
 
 -- | Smart constructor for nodes
 node :: Text -> (a -> IO b) -> Node a b
-node = Node
+node name f = Node name (\x -> do
+  result <- f x
+  evaluate result)
 
 -- | Smart constructor for edges
 edge :: Node a b -> Node b c -> Edge a b c

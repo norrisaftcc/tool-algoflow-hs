@@ -146,22 +146,22 @@ dryRun = go 0
     go depth (Pure _) = indent depth <> "Pure result\n"
     go depth (Free step) = case step of
       Compute name _ next -> 
-        indent depth <> "Compute: " <> name <> "\n" <>
+        indent depth <> "compute: " <> name <> "\n" <>
         go (depth + 1) (next undefined)
         
       Parallel w1 w2 next ->
-        indent depth <> "Parallel:\n" <>
+        indent depth <> "parallel:\n" <>
         indent (depth + 1) <> "Branch 1:\n" <> go (depth + 2) w1 <>
         indent (depth + 1) <> "Branch 2:\n" <> go (depth + 2) w2 <>
         go depth (next undefined)
         
       Cached key w next ->
-        indent depth <> "Cache[" <> key <> "]:\n" <>
+        indent depth <> "cache[" <> key <> "]:\n" <>
         go (depth + 1) w <>
         go depth (next undefined)
         
       Recover main fallback next ->
-        indent depth <> "Recover:\n" <>
+        indent depth <> "recover:\n" <>
         indent (depth + 1) <> "Try:\n" <> go (depth + 2) main <>
         indent (depth + 1) <> "Fallback:\n" <> go (depth + 2) fallback <>
         go depth (next undefined)
