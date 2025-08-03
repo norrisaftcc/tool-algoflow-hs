@@ -117,7 +117,7 @@ spec = describe "Flow.Cache" $ do
       cache <- inMemoryCache
       
       -- Simulate expensive computation
-      let expensive x = return $ BS8.pack $ show (sum [1..x] :: Int)
+      let expensive x = return (sum [1..x] :: Int)
           deserialize bs = case reads (BS8.unpack bs) of
                             [(x, "")] -> Just x
                             _ -> Nothing
