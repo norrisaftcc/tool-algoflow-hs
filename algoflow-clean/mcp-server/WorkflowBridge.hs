@@ -67,7 +67,7 @@ executePredefinedWorkflow name input = case M.lookup name predefinedWorkflows of
                 , enableCache = False
                 , cacheDir = Nothing
                 }
-        result <- Execute.runWorkflow config flow input
+        result <- Flow.Execute.runWorkflow config flow input
         case result of
             Right (ExecutionResult value _ duration _) -> return WorkflowResult
                 { resultStatus = "success"
@@ -122,7 +122,7 @@ executeWorkflowFromSpec spec input = case createSimpleWorkflow spec of
                 , enableCache = False
                 , cacheDir = Nothing
                 }
-        result <- Execute.runWorkflow config flow input
+        result <- Flow.Execute.runWorkflow config flow input
         case result of
             Right (ExecutionResult value _ duration _) -> return WorkflowResult
                 { resultStatus = "success"
