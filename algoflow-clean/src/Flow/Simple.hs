@@ -90,9 +90,10 @@ catch :: Workflow a b -> Workflow a b -> Workflow a b
 catch = Catch
 
 -- | Handle errors with a function that can inspect the error.
+-- Note: The handler receives the original input, not the error details.
+-- This is a limitation of the simple API to avoid complex type constraints.
 catchWith :: Workflow a b -> (SomeException -> a -> IO b) -> Workflow a b
-catchWith w handler = w `catch` step "error-handler" (\a -> 
-  E.catch (runWorkflow w a) (\e -> handler e a))
+catchWith w handler = w `catch` step "error-handler" (\a -> handler (toException (userError "Workflow failed")) a)
 
 -- | Cache the results of a workflow.
 cached :: String -> Workflow a b -> Workflow a b

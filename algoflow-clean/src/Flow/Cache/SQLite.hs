@@ -33,6 +33,7 @@ import Control.Concurrent (forkIO)
 import Control.Concurrent.MVar (MVar, newMVar, modifyMVar)
 import Control.Exception (bracket, catch, SomeException)
 import Control.Monad (void, when)
+import Data.Maybe (fromMaybe)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
@@ -47,6 +48,7 @@ import Database.SQLite.Simple.ToRow
 import Flow.Cache
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath (takeDirectory)
+import System.IO (hPutStrLn, stderr)
 
 -- | Configuration for SQLite cache
 data SQLiteConfig = SQLiteConfig
@@ -124,7 +126,9 @@ sqliteCache config = do
             -- Parse time
             let timeStr = rowCreated row
             case parseTimeM True defaultTimeLocale "%Y-%m-%dT%H:%M:%S%Q" (T.unpack timeStr) of
-              Nothing -> return Nothing  -- Corrupted time
+              Nothing -> do
+                hPutStrLn stderr $ "Failed to parse cache entry time: \"" ++ T.unpack timeStr ++ "\" for key: " ++ show key
+                return Nothing  -- Corrupted time
               Just created -> return $ Just CacheEntry
                 { ceData = rowData row
                 , ceCreated = created
@@ -217,7 +221,8 @@ migrateSchema conn = do
 -- | Enforce maximum cache size by removing oldest entries
 enforceMaxSize :: Connection -> Int64 -> IO ()
 enforceMaxSize conn maxSize = do
-  [Only totalSize] <- query_ conn "SELECT SUM(size) FROM cache_entries"
+  [Only mTotalSize] <- query_ conn "SELECT SUM(size) FROM cache_entries"
+  let totalSize = fromMaybe 0 mTotalSize  -- SUM returns NULL for empty tables
   
   when (totalSize > maxSize) $ do
     -- Calculate how much to delete

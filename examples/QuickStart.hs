@@ -64,9 +64,10 @@ fileDemo = do
           then return path
           else error $ "File not found: " ++ path
   
-  -- Try with existing file
-  count1 <- runWorkflow fileWorkflow "QuickStart.hs"
-  putStrLn $ "QuickStart.hs has " ++ show count1 ++ " words"
+  -- Try with existing file (using this very file as an example)
+  let demoFile = "QuickStart.hs"  -- Change this to any file you want to test
+  count1 <- runWorkflow fileWorkflow demoFile
+  putStrLn $ demoFile ++ " has " ++ show count1 ++ " words"
   
   -- Try with non-existent file (will use fallback)
   count2 <- runWorkflow fileWorkflow "nonexistent.txt"
