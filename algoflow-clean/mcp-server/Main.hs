@@ -1,12 +1,15 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Main where
 
 import Control.Concurrent.STM
-import Control.Monad.IO.Class (liftIO)
+-- import Control.Monad.IO.Class (liftIO)  -- Not used
 import Data.Aeson
+import Data.Aeson.Types (parseMaybe, (.:))
+import Data.Aeson.Key (fromText)
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -14,7 +17,7 @@ import GHC.Generics
 import Network.HTTP.Types
 import Network.Wai
 import Network.Wai.Handler.Warp
-import qualified Data.ByteString.Lazy.Char8 as L8
+-- import qualified Data.ByteString.Lazy.Char8 as L8  -- Not used
 
 import WorkflowBridge
 
@@ -107,7 +110,7 @@ data ServerState = ServerState
 
 -- MCP request handler
 handleMCPRequest :: ServerState -> MCPRequest -> IO MCPResponse
-handleMCPRequest state req@MCPRequest{..} = case method of
+handleMCPRequest state MCPRequest{method=rpcMethod, params=rpcParams, id=rpcId, ..} = case rpcMethod of
     "initialize" -> return $ MCPResponse
         { jsonrpc = "2.0"
         , result = Just $ object
@@ -121,17 +124,17 @@ handleMCPRequest state req@MCPRequest{..} = case method of
                 ]
             ]
         , error = Nothing
-        , id = id
+        , id = rpcId
         }
     
     "tools/list" -> return $ MCPResponse
         { jsonrpc = "2.0"
         , result = Just $ object ["tools" .= workflowTools]
         , error = Nothing
-        , id = id
+        , id = rpcId
         }
     
-    "tools/call" -> handleToolCall state params id
+    "tools/call" -> handleToolCall state rpcParams rpcId
     
     _ -> return $ MCPResponse
         { jsonrpc = "2.0"
@@ -141,13 +144,13 @@ handleMCPRequest state req@MCPRequest{..} = case method of
             , message = "Method not found"
             , errorData = Nothing
             }
-        , id = id
+        , id = rpcId
         }
 
 -- Tool execution
 handleToolCall :: ServerState -> Value -> Maybe Value -> IO MCPResponse
 handleToolCall state params reqId = case params of
-    Object obj -> case (,) <$> obj .! "name" <*> obj .! "arguments" of
+    Object obj -> case (,) <$> (Object obj) .! "name" <*> (Object obj) .! "arguments" of
         Just (String "create_workflow", args) -> do
             -- Simple workflow storage for now
             case args of
@@ -168,7 +171,7 @@ handleToolCall state params reqId = case params of
         Just (String "list_workflows", _) -> do
             wfs <- readTVarIO (workflows state)
             let predefined = M.keys predefinedWorkflows
-            let allWorkflows = map fst wfs ++ predefined
+            -- let allWorkflows = map fst wfs ++ predefined  -- Not used
             return $ MCPResponse
                 { jsonrpc = "2.0"
                 , result = Just $ object
@@ -185,7 +188,7 @@ handleToolCall state params reqId = case params of
         
         Just (String "execute_workflow", args) -> do
             case args of
-                Object argObj -> case (,) <$> argObj .! "workflow_id" <*> argObj .! "inputs" of
+                Object argObj -> case (,) <$> (Object argObj) .! "workflow_id" <*> (Object argObj) .! "inputs" of
                     Just (String wfId, inputs) -> do
                         -- Try predefined workflows first
                         if M.member wfId predefinedWorkflows
@@ -239,7 +242,10 @@ handleToolCall state params reqId = case params of
         , id = rid
         }
     
-    (Object obj) .! key = parseMaybe (.: key) obj
+    -- Helper to extract field from JSON object
+    (.!) :: Value -> Text -> Maybe Value
+    (Object obj) .! key = parseMaybe (.: fromText key) obj
+    _ .! _ = Nothing
 
 -- WAI Application
 app :: ServerState -> Application

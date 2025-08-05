@@ -5,8 +5,11 @@
 
 module WorkflowBridge where
 
-import Control.Monad
+-- Control.Arrow not needed after refactoring to use Workflow type
+-- Control.Monad not needed
 import Data.Aeson
+-- Data.Aeson.KeyMap only needed for KM qualified imports
+import qualified Data.Aeson.KeyMap as KM
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Map (Map)
@@ -16,7 +19,7 @@ import GHC.Generics
 -- Import from AlgoFlow
 import Flow.Core
 import Flow.Execute
-import qualified Flow.Free as Free
+-- import qualified Flow.Free as Free  -- Not used currently
 -- import Flow.Example (exampleFlow1, exampleFlow2)  -- Disabled temporarily
 
 -- JSON representations
@@ -49,27 +52,27 @@ data WorkflowResult = WorkflowResult
 instance ToJSON WorkflowResult
 
 -- Pre-defined workflows (as a quick kludge)
-predefinedWorkflows :: Map Text (Flow Int String)
+predefinedWorkflows :: Map Text (Workflow IO Int String)
 predefinedWorkflows = M.fromList
     [ -- ("example1", exampleFlow1)  -- Disabled temporarily
       -- , ("example2", exampleFlow2)  -- Disabled temporarily
-      ("simple", arr (\x -> "Input: " ++ show x))
-    , ("double", arr (*2) >>> arr show)
-    , ("concatenate", arr (\x -> show x) &&& arr (\x -> " doubled is " ++ show (x*2)) >>> arr (uncurry (++)))
+      ("simple", step "simple" (\x -> return $ "Input: " ++ show x))
+    , ("double", step "multiply" (\x -> return (x * 2)) `Seq` step "show" (\x -> return $ show x))
+    , ("concatenate", step "concatenate" (\x -> return $ show x ++ " doubled is " ++ show (x*2)))
     ]
 
 -- Execute a predefined workflow
 executePredefinedWorkflow :: Text -> Int -> IO WorkflowResult
 executePredefinedWorkflow name input = case M.lookup name predefinedWorkflows of
-    Just flow -> do
+    Just workflow -> do
         let config = ExecutionConfig
                 { maxParallel = 4
                 , enableCache = False
                 , cacheDir = Nothing
                 }
-        result <- Execute.runWorkflow config flow input
+        result <- Flow.Execute.runWorkflow config workflow input
         case result of
-            Right (ExecutionResult value _ duration _) -> return WorkflowResult
+            Right (ExecutionResult value duration _) -> return WorkflowResult
                 { resultStatus = "success"
                 , resultValue = Just (toJSON value)
                 , resultError = Nothing
@@ -89,42 +92,41 @@ executePredefinedWorkflow name input = case M.lookup name predefinedWorkflows of
         }
 
 -- Create a simple workflow from spec (very basic for now)
-createSimpleWorkflow :: WorkflowSpec -> Maybe (Flow Value Value)
+createSimpleWorkflow :: WorkflowSpec -> Maybe (Workflow IO Value Value)
 createSimpleWorkflow spec = case workflowSteps spec of
     [] -> Nothing
-    [step] -> Just $ createStep step
-    steps -> Just $ foldr1 (>>>) (map createStep steps)
+    [singleStep] -> Just $ createStep singleStep
+    steps -> Just $ foldr1 Seq (map createStep steps)
   where
-    createStep :: StepSpec -> Flow Value Value
+    createStep :: StepSpec -> Workflow IO Value Value
     createStep StepSpec{..} = case stepType of
-        "transform" -> arr $ \input -> object
+        "transform" -> step stepName $ \input -> return $ object
             [ "step" .= stepName
             , "input" .= input
             , "transformed" .= True
             ]
-        "filter" -> arr $ \input -> case input of
-            Object o -> Object (M.filter (/= Null) (toMap o))
+        "filter" -> step stepName $ \input -> return $ case input of
+            Object o -> Object (KM.filter (/= Null) o)
             v -> v
-        "enrich" -> arr $ \input -> case input of
-            Object o -> Object (M.insert "enriched" (Bool True) (toMap o))
+        "enrich" -> step stepName $ \input -> return $ case input of
+            Object o -> Object (KM.insert "enriched" (Bool True) o)
             v -> object ["original" .= v, "enriched" .= True]
-        _ -> arr id
+        _ -> step stepName $ \input -> return input
     
-    toMap :: Object -> Map Text Value
-    toMap = id  -- In newer aeson versions, Object is already a Map
+    -- Note: Object is now a KeyMap in newer Aeson versions, not a Map
 
 -- Execute workflow from JSON spec
 executeWorkflowFromSpec :: WorkflowSpec -> Value -> IO WorkflowResult
 executeWorkflowFromSpec spec input = case createSimpleWorkflow spec of
-    Just flow -> do
+    Just workflow -> do
         let config = ExecutionConfig
                 { maxParallel = 4
                 , enableCache = False
                 , cacheDir = Nothing
                 }
-        result <- Execute.runWorkflow config flow input
+        result <- Flow.Execute.runWorkflow config workflow input
         case result of
-            Right (ExecutionResult value _ duration _) -> return WorkflowResult
+            Right (ExecutionResult value duration _) -> return WorkflowResult
                 { resultStatus = "success"
                 , resultValue = Just value
                 , resultError = Nothing
