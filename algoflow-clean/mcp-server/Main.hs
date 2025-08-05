@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -7,6 +8,8 @@ module Main where
 import Control.Concurrent.STM
 import Control.Monad.IO.Class (liftIO)
 import Data.Aeson
+import Data.Aeson.Types (parseMaybe, (.:))
+import Data.Aeson.Key (fromText)
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -147,7 +150,7 @@ handleMCPRequest state req@MCPRequest{..} = case method of
 -- Tool execution
 handleToolCall :: ServerState -> Value -> Maybe Value -> IO MCPResponse
 handleToolCall state params reqId = case params of
-    Object obj -> case (,) <$> obj .! "name" <*> obj .! "arguments" of
+    Object obj -> case (,) <$> (Object obj) .! "name" <*> (Object obj) .! "arguments" of
         Just (String "create_workflow", args) -> do
             -- Simple workflow storage for now
             case args of
@@ -185,7 +188,7 @@ handleToolCall state params reqId = case params of
         
         Just (String "execute_workflow", args) -> do
             case args of
-                Object argObj -> case (,) <$> argObj .! "workflow_id" <*> argObj .! "inputs" of
+                Object argObj -> case (,) <$> (Object argObj) .! "workflow_id" <*> (Object argObj) .! "inputs" of
                     Just (String wfId, inputs) -> do
                         -- Try predefined workflows first
                         if M.member wfId predefinedWorkflows
@@ -239,7 +242,10 @@ handleToolCall state params reqId = case params of
         , id = rid
         }
     
-    (Object obj) .! key = parseMaybe (.: key) obj
+    -- Helper to extract field from JSON object
+    (.!) :: Value -> Text -> Maybe Value
+    (Object obj) .! key = parseMaybe (.: fromText key) obj
+    _ .! _ = Nothing
 
 -- WAI Application
 app :: ServerState -> Application
