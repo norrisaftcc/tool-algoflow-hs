@@ -58,7 +58,7 @@ module Flow.Simple
   , identity
   ) where
 
-import Control.Exception (SomeException)
+import Control.Exception (SomeException, toException)
 import qualified Control.Exception as E
 import Control.Concurrent.Async (concurrently)
 import Prelude hiding ((>>>))
