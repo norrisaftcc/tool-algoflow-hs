@@ -5,10 +5,10 @@
 
 module WorkflowBridge where
 
-import Control.Arrow
-import Control.Monad
+-- Control.Arrow not needed after refactoring to use Workflow type
+-- Control.Monad not needed
 import Data.Aeson
-import Data.Aeson.KeyMap (KeyMap)
+-- Data.Aeson.KeyMap only needed for KM qualified imports
 import qualified Data.Aeson.KeyMap as KM
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -19,7 +19,7 @@ import GHC.Generics
 -- Import from AlgoFlow
 import Flow.Core
 import Flow.Execute
-import qualified Flow.Free as Free
+-- import qualified Flow.Free as Free  -- Not used currently
 -- import Flow.Example (exampleFlow1, exampleFlow2)  -- Disabled temporarily
 
 -- JSON representations
