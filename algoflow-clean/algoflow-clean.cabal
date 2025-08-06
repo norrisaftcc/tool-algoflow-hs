@@ -98,6 +98,7 @@ test-suite algoflow-test
                     , Flow.FreeSpec
                     , Flow.GraphSpec
                     , Flow.ExecuteSpec
+                    , Flow.ErrorSpec
                     , Flow.CacheSpec
                     , Flow.Cache.SQLiteSpec
     build-depends:    base >=4.17.0.0 && <5
