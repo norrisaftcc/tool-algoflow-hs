@@ -103,7 +103,6 @@ test-suite algoflow-test
     build-depends:    base >=4.17.0.0 && <5
                     , algoflow-clean
                     , hspec
-                    , hspec-discover
                     , QuickCheck
                     , containers
                     , time
@@ -117,3 +116,4 @@ test-suite algoflow-test
                     , sqlite-simple
                     , directory
                     , temporary
+    build-tool-depends: hspec-discover:hspec-discover
