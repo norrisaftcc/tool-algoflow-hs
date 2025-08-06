@@ -110,7 +110,7 @@ spec = do
               n <- readIORef counter
               modifyIORef' counter (+1)
               if n < 2
-                then throwIO $ userError "fail"  -- Don't double-wrap in StepFailed
+                then throwIO $ userError "fail"  -- withRetry will wrap this in StepFailed
                 else return "success"
             policy = defaultRetryPolicy :: RetryPolicy IO
         
@@ -164,13 +164,15 @@ spec = do
               n <- readIORef counter
               modifyIORef' counter (+1)
               if n < 2
-                then throwIO $ StepFailed "test" (toException $ userError "fail")
+                then throwIO $ userError "fail"  -- withRetry will wrap this in StepFailed
                 else return "success"
             
             -- Custom policy with very short delays for testing
+            -- Use exponential backoff: 1ms, 2ms, 4ms (baseDelayMicros = 1000 microseconds)
+            baseDelayMicros = 1000  -- 1 millisecond in microseconds
             policy = RetryPolicy
               { rpMaxAttempts = 3
-              , rpDelay = \attempt -> threadDelay (1000 * (2 ^ (attempt - 1)))
+              , rpDelay = \attempt -> threadDelay (baseDelayMicros * (2 ^ (attempt - 1)))
               , rpShouldRetry = \_ -> True
               }
         
