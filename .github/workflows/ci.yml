@@ -97,4 +97,4 @@ jobs:
       uses: haskell-actions/hlint-run@v2
       with:
         path: '["algoflow-clean/src", "algoflow-clean/v2"]'
-        fail-on: warning
+        fail-on: error

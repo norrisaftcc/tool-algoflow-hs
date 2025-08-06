@@ -11,6 +11,8 @@ module Verify where
 
 import Control.Category
 import Control.Arrow
+import Control.Concurrent (threadDelay)
+import Data.Time (getCurrentTime, diffUTCTime)
 import Prelude hiding (id, (.))
 
 import Graph
@@ -135,7 +137,3 @@ time action = do
   end <- getCurrentTime
   putStrLn $ "Time: " ++ show (diffUTCTime end start)
   return result
-
--- Missing imports for this example
-import Data.Time (getCurrentTime, diffUTCTime)
-import Control.Concurrent (threadDelay)
